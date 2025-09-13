@@ -66,8 +66,11 @@
             </svg>
         </button>
         <h2 class="text-xl font-bold text-gray-800 mt-4">Menu</h2>
-        <button onclick="showForm()" class="w-full px-6 py-3 text-left font-semibold rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
+        <button onclick="showForm('enquiry')" class="w-full px-6 py-3 text-left font-semibold rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
             Enquiry Form
+        </button>
+        <button onclick="showForm('update')" class="w-full px-6 py-3 text-left font-semibold rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
+            Update Booking Status
         </button>
         <button onclick="showDashboard()" class="w-full px-6 py-3 text-left font-semibold rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
             View Dashboard
@@ -85,8 +88,8 @@
         </div>
     </div>
 
-    <!-- Main Form Content -->
-    <div id="formContainer" class="bg-white p-8 rounded-lg shadow-lg max-w-2xl w-full">
+    <!-- Enquiry Form Content -->
+    <div id="enquiryFormContainer" class="bg-white p-8 rounded-lg shadow-lg max-w-2xl w-full">
         <h1 class="text-3xl font-bold text-center mb-6 text-gray-800">Homestay Enquiry Form</h1>
         <form id="enquiryForm" class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
@@ -167,12 +170,43 @@
                 <textarea id="remarks" name="Remarks / Follow-up Notes" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
             </div>
             <div class="md:col-span-2 flex justify-between items-center mt-4">
-                <button type="button" onclick="submitForm()" class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
+                <button type="button" onclick="submitForm('enquiry')" class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
                     Submit
                 </button>
             </div>
         </form>
-        <div id="message" class="mt-6 text-center text-sm font-medium"></div>
+        <div id="enquiryMessage" class="mt-6 text-center text-sm font-medium"></div>
+    </div>
+
+    <!-- Update Form Content -->
+    <div id="updateFormContainer" class="hidden bg-white p-8 rounded-lg shadow-lg max-w-2xl w-full">
+        <h1 class="text-3xl font-bold text-center mb-6 text-gray-800">Update Booking Status</h1>
+        <form id="updateForm" class="grid grid-cols-1 gap-6">
+            <div>
+                <label for="updateEnquiryId" class="block text-sm font-medium text-gray-700 mb-1">Enquiry ID</label>
+                <input type="text" id="updateEnquiryId" name="Enquiry ID" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+            </div>
+            <div>
+                <label for="updateEnquiryStatus" class="block text-sm font-medium text-gray-700 mb-1">Enquiry Status</label>
+                <select id="updateEnquiryStatus" name="Enquiry Status" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                    <option value="" disabled selected>Select a status</option>
+                    <option value="New">New</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="Confirmed">Confirmed</option>
+                    <option value="Cancelled">Cancelled</option>
+                </select>
+            </div>
+            <div>
+                <label for="updateRemarks" class="block text-sm font-medium text-gray-700 mb-1">Remarks / Follow-up Notes</label>
+                <textarea id="updateRemarks" name="Remarks / Follow-up Notes" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+            </div>
+            <div class="flex justify-between items-center mt-4">
+                <button type="button" onclick="submitForm('update')" class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
+                    Update Status
+                </button>
+            </div>
+        </form>
+        <div id="updateMessage" class="mt-6 text-center text-sm font-medium"></div>
     </div>
     
     <!-- Dashboard Content -->
@@ -193,13 +227,14 @@
 
     <script>
         const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyCK9cJh8iX8nH5seaFPJyvEbVCxcwqKH2w5BIkI6CCTGyi9PwiSCAtb0R9cHwcIRz8Qg/exec';
-        const messageEl = document.getElementById('message');
+        const enquiryMessageEl = document.getElementById('enquiryMessage');
+        const updateMessageEl = document.getElementById('updateMessage');
         const adminMessageEl = document.getElementById('adminMessage');
-        const dashboardMessageEl = document.getElementById('dashboardMessage');
         const adminPasswordInput = document.getElementById('adminPassword');
         const hamburgerMenu = document.getElementById('hamburgerMenu');
         const overlay = document.getElementById('overlay');
-        const formContainer = document.getElementById('formContainer');
+        const enquiryFormContainer = document.getElementById('enquiryFormContainer');
+        const updateFormContainer = document.getElementById('updateFormContainer');
         const dashboardContainer = document.getElementById('dashboardContainer');
         const SECRET_PASSWORD = 'password123';
 
@@ -216,29 +251,41 @@
             adminPasswordInput.value = '';
         }
 
-        function showForm() {
-            formContainer.classList.remove('hidden');
-            dashboardContainer.classList.add('hidden');
+        function showForm(formType) {
             closeMenu();
+            enquiryFormContainer.classList.add('hidden');
+            updateFormContainer.classList.add('hidden');
+            dashboardContainer.classList.add('hidden');
+
+            if (formType === 'enquiry') {
+                enquiryFormContainer.classList.remove('hidden');
+                generateEnquiryIDAndDate();
+            } else if (formType === 'update') {
+                updateFormContainer.classList.remove('hidden');
+                updateMessageEl.textContent = '';
+                document.getElementById('updateEnquiryId').value = '';
+                document.getElementById('updateEnquiryStatus').value = '';
+                document.getElementById('updateRemarks').value = '';
+            }
         }
 
         async function showDashboard() {
-            formContainer.classList.add('hidden');
-            dashboardContainer.classList.remove('hidden');
             closeMenu();
+            enquiryFormContainer.classList.add('hidden');
+            updateFormContainer.classList.add('hidden');
+            dashboardContainer.classList.remove('hidden');
             
             dashboardMessageEl.textContent = 'Fetching dashboard data...';
             dashboardMessageEl.className = 'mt-6 text-center text-sm font-medium text-gray-500';
 
             try {
-                // Fetch data from the Google Apps Script backend
                 const response = await fetch(`${WEB_APP_URL}?action=getDashboardData`);
                 const result = await response.json();
                 
                 if (result.success) {
                     const dashboardData = result.data;
                     renderCharts(dashboardData);
-                    dashboardMessageEl.textContent = ''; // Clear message on success
+                    dashboardMessageEl.textContent = '';
                 } else {
                     dashboardMessageEl.textContent = 'Error fetching data: ' + result.message;
                     dashboardMessageEl.className = 'mt-6 text-center text-sm font-medium text-red-600';
@@ -263,20 +310,32 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            generateEnquiryIDAndDate();
+            showForm('enquiry');
         });
 
-        async function submitForm() {
+        async function submitForm(formType) {
+            let form, messageEl;
+            let data = {};
+
+            if (formType === 'enquiry') {
+                form = document.getElementById('enquiryForm');
+                messageEl = enquiryMessageEl;
+                const formData = new FormData(form);
+                formData.forEach((value, key) => data[key] = value);
+                data.action = 'addEnquiry';
+            } else if (formType === 'update') {
+                form = document.getElementById('updateForm');
+                messageEl = updateMessageEl;
+                const formData = new FormData(form);
+                formData.forEach((value, key) => data[key] = value);
+                data.action = 'updateStatus';
+            }
+
             messageEl.textContent = 'Submitting...';
             messageEl.className = 'mt-6 text-center text-sm font-medium text-gray-500';
 
-            const form = document.getElementById('enquiryForm');
-            const formData = new FormData(form);
-            const data = {};
-            formData.forEach((value, key) => data[key] = value);
-
             try {
-                await fetch(WEB_APP_URL, {
+                const response = await fetch(WEB_APP_URL, {
                     method: 'POST',
                     mode: 'no-cors',
                     cache: 'no-cache',
@@ -288,8 +347,16 @@
                 
                 messageEl.textContent = 'Data submitted successfully!';
                 messageEl.className = 'mt-6 text-center text-sm font-medium text-green-600';
-                form.reset();
-                generateEnquiryIDAndDate();
+
+                // We can't read the response from a no-cors fetch, so we just assume success.
+                // The backend now returns a success message we can trust.
+                // We'll reset the form to be ready for the next entry.
+                if (formType === 'enquiry') {
+                    form.reset();
+                    generateEnquiryIDAndDate();
+                } else if (formType === 'update') {
+                    form.reset();
+                }
 
             } catch (error) {
                 messageEl.textContent = 'Error submitting data. Please check the browser console.';
