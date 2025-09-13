@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Homestay Booking Frontend</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Custom styles for the hamburger menu */
+        .hamburger-menu {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 300px;
+            height: 100%;
+            background-color: white;
+            box-shadow: -2px 0 5px rgba(0,0,0,0.2);
+            transform: translateX(100%);
+            transition: transform 0.3s ease-in-out;
+            z-index: 50;
+        }
+        .hamburger-menu.open {
+            transform: translateX(0);
+        }
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 40;
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+        }
+        .overlay.open {
+            visibility: visible;
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-8 flex items-center justify-center min-h-screen">
+    <!-- Hamburger Icon -->
+    <button onclick="openMenu()" class="fixed top-4 right-4 z-50 p-2 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <svg class="w-8 h-8 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+    </button>
+
+    <!-- Overlay for closing menu -->
+    <div id="overlay" class="overlay" onclick="closeMenu()"></div>
+
+    <!-- Hamburger Menu -->
+    <div id="hamburgerMenu" class="hamburger-menu p-6 flex flex-col space-y-4">
+        <button onclick="closeMenu()" class="self-end p-2 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <svg class="w-6 h-6 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </button>
+        <h2 class="text-xl font-bold text-gray-800 mt-4">Menu</h2>
+        <button onclick="showForm()" class="w-full px-6 py-3 text-left font-semibold rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
+            Enquiry Form
+        </button>
+        <button onclick="showDashboard()" class="w-full px-6 py-3 text-left font-semibold rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
+            View Dashboard
+        </button>
+        <div class="border-t border-gray-200 pt-4 mt-auto">
+            <h2 class="text-xl font-bold text-gray-800 mb-2">Admin Options</h2>
+            <div class="w-full mb-4">
+                <label for="adminPassword" class="block text-sm font-medium text-gray-700 mb-1">Admin Password</label>
+                <input type="password" id="adminPassword" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <button type="button" onclick="resetSheet()" class="w-full px-6 py-3 bg-red-600 text-white font-semibold rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200">
+                Reset Sheet
+            </button>
+            <div id="adminMessage" class="mt-4 text-center text-sm font-medium"></div>
+        </div>
+    </div>
+
+    <!-- Main Form Content -->
+    <div id="formContainer" class="bg-white p-8 rounded-lg shadow-lg max-w-2xl w-full">
+        <h1 class="text-3xl font-bold text-center mb-6 text-gray-800">Homestay Enquiry Form</h1>
+        <form id="enquiryForm" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <label for="enquiryId" class="block text-sm font-medium text-gray-700 mb-1">Enquiry ID</label>
+                <input type="text" id="enquiryId" name="Enquiry ID" readonly class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50">
+            </div>
+            <div>
+                <label for="dateOfEnquiry" class="block text-sm font-medium text-gray-700 mb-1">Date of Enquiry</label>
+                <input type="date" id="dateOfEnquiry" name="Date of Enquiry" readonly class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50">
+            </div>
+            <div>
+                <label for="guestName" class="block text-sm font-medium text-gray-700 mb-1">Guest Name</label>
+                <input type="text" id="guestName" name="Guest Name" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div>
+                <label for="contact" class="block text-sm font-medium text-gray-700 mb-1">Contact (Phone/Email)</label>
+                <input type="text" id="contact" name="Contact (Phone/Email)" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div>
+                <label for="propertyName" class="block text-sm font-medium text-gray-700 mb-1">Property Name</label>
+                <select id="propertyName" name="Property Name" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="" disabled selected>Select a property</option>
+                    <option value="Property 1">1BHK - 401</option>
+                    <option value="Property 2">1BHK - 402</option>
+                    <option value="Property 3">2BHK - 101</option>
+                    <option value="Property 4">2bHK - 102</option>
+                    <option value="Property 5">2BHK - 201</option>
+                    <option value="Property 6">2BHK - 202</option>
+                    <option value="Property 7">2BHK - 302</option>
+                    <option value="Property 8">2BHK - G1</option>
+                    <option value="Property 9">3BHK - 101</option>
+                    <option value="Property 10">1BHK - Villa</option>
+                    <option value="Property 11">2BHK - Villa</option>
+                    <option value="Property 12">2BHK - Palace</option>
+                    <option value="Property 13">2BHK - Falnir</option>
+                    <option value="Property 14">3BHK - Nikunj</option>
+                </select>
+            </div>
+            <div>
+                <label for="checkInDate" class="block text-sm font-medium text-gray-700 mb-1">Check-in Date</label>
+                <input type="date" id="checkInDate" name="Check-in Date" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div>
+                <label for="checkOutDate" class="block text-sm font-medium text-gray-700 mb-1">Check-out Date</label>
+                <input type="date" id="checkOutDate" name="Check-out Date" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div>
+                <label for="noOfGuests" class="block text-sm font-medium text-gray-700 mb-1">No. of Guests</label>
+                <input type="number" id="noOfGuests" name="No. of Guests" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div>
+                <label for="bookingSource" class="block text-sm font-medium text-gray-700 mb-1">Booking Source</label>
+                <select id="bookingSource" name="Booking Source" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="" disabled selected>Select a source</option>
+                    <option value="Airbnb">Airbnb</option>
+                    <option value="Booking.com">Booking.com</option>
+                    <option value="Direct">Direct</option>
+                    <option value="Walk-in">Walk-in</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            <div>
+                <label for="enquiryStatus" class="block text-sm font-medium text-gray-700 mb-1">Enquiry Status</label>
+                <select id="enquiryStatus" name="Enquiry Status" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                    <option value="" disabled selected>Select a status</option>
+                    <option value="New">New</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="Confirmed">Confirmed</option>
+                    <option value="Cancelled">Cancelled</option>
+                </select>
+            </div>
+            <div>
+                <label for="assignedTo" class="block text-sm font-medium text-gray-700 mb-1">Assigned To</label>
+                <input type="text" id="assignedTo" name="Assigned To" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div class="md:col-span-2">
+                <label for="remarks" class="block text-sm font-medium text-gray-700 mb-1">Remarks / Follow-up Notes</label>
+                <textarea id="remarks" name="Remarks / Follow-up Notes" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+            </div>
+            <div class="md:col-span-2 flex justify-between items-center mt-4">
+                <button type="button" onclick="submitForm()" class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
+                    Submit
+                </button>
+            </div>
+        </form>
+        <div id="message" class="mt-6 text-center text-sm font-medium"></div>
+    </div>
+    
+    <!-- Dashboard Content -->
+    <div id="dashboardContainer" class="hidden bg-white p-8 rounded-lg shadow-lg max-w-4xl w-full">
+        <h1 class="text-3xl font-bold text-center mb-6 text-gray-800">Enquiry Dashboard</h1>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="bg-gray-50 p-6 rounded-lg shadow-inner">
+                <h2 class="text-xl font-semibold text-gray-700 mb-4 text-center">Enquiries by Property</h2>
+                <canvas id="propertyChart"></canvas>
+            </div>
+            <div class="bg-gray-50 p-6 rounded-lg shadow-inner">
+                <h2 class="text-xl font-semibold text-gray-700 mb-4 text-center">Enquiries by Source</h2>
+                <canvas id="sourceChart"></canvas>
+            </div>
+        </div>
+        <div id="dashboardMessage" class="mt-6 text-center text-sm font-medium"></div>
+    </div>
+
+    <script>
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyCK9cJh8iX8nH5seaFPJyvEbVCxcwqKH2w5BIkI6CCTGyi9PwiSCAtb0R9cHwcIRz8Qg/exec';
+        const messageEl = document.getElementById('message');
+        const adminMessageEl = document.getElementById('adminMessage');
+        const dashboardMessageEl = document.getElementById('dashboardMessage');
+        const adminPasswordInput = document.getElementById('adminPassword');
+        const hamburgerMenu = document.getElementById('hamburgerMenu');
+        const overlay = document.getElementById('overlay');
+        const formContainer = document.getElementById('formContainer');
+        const dashboardContainer = document.getElementById('dashboardContainer');
+        const SECRET_PASSWORD = 'password123';
+
+        let propertyChart, sourceChart;
+
+        function openMenu() {
+            hamburgerMenu.classList.add('open');
+            overlay.classList.add('open');
+        }
+
+        function closeMenu() {
+            hamburgerMenu.classList.remove('open');
+            overlay.classList.remove('open');
+            adminPasswordInput.value = '';
+        }
+
+        function showForm() {
+            formContainer.classList.remove('hidden');
+            dashboardContainer.classList.add('hidden');
+            closeMenu();
+        }
+
+        async function showDashboard() {
+            formContainer.classList.add('hidden');
+            dashboardContainer.classList.remove('hidden');
+            closeMenu();
+            
+            dashboardMessageEl.textContent = 'Fetching dashboard data...';
+            dashboardMessageEl.className = 'mt-6 text-center text-sm font-medium text-gray-500';
+
+            try {
+                // Fetch data from the Google Apps Script backend
+                const response = await fetch(`${WEB_APP_URL}?action=getDashboardData`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    const dashboardData = result.data;
+                    renderCharts(dashboardData);
+                    dashboardMessageEl.textContent = ''; // Clear message on success
+                } else {
+                    dashboardMessageEl.textContent = 'Error fetching data: ' + result.message;
+                    dashboardMessageEl.className = 'mt-6 text-center text-sm font-medium text-red-600';
+                }
+            } catch (error) {
+                dashboardMessageEl.textContent = 'Network error: Could not fetch data.';
+                dashboardMessageEl.className = 'mt-6 text-center text-sm font-medium text-red-600';
+                console.error('Error fetching dashboard data:', error);
+            }
+        }
+
+        function generateEnquiryIDAndDate() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const random = Math.floor(Math.random() * 90000) + 10000;
+
+            const enquiryId = `ENQ-${year}${month}${day}-${random}`;
+            document.getElementById('enquiryId').value = enquiryId;
+            document.getElementById('dateOfEnquiry').value = `${year}-${month}-${day}`;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            generateEnquiryIDAndDate();
+        });
+
+        async function submitForm() {
+            messageEl.textContent = 'Submitting...';
+            messageEl.className = 'mt-6 text-center text-sm font-medium text-gray-500';
+
+            const form = document.getElementById('enquiryForm');
+            const formData = new FormData(form);
+            const data = {};
+            formData.forEach((value, key) => data[key] = value);
+
+            try {
+                await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    cache: 'no-cache',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                messageEl.textContent = 'Data submitted successfully!';
+                messageEl.className = 'mt-6 text-center text-sm font-medium text-green-600';
+                form.reset();
+                generateEnquiryIDAndDate();
+
+            } catch (error) {
+                messageEl.textContent = 'Error submitting data. Please check the browser console.';
+                messageEl.className = 'mt-6 text-center text-sm font-medium text-red-600';
+                console.error('Error:', error);
+            }
+        }
+
+        async function resetSheet() {
+            if (adminPasswordInput.value !== SECRET_PASSWORD) {
+                adminMessageEl.textContent = 'Incorrect password.';
+                adminMessageEl.className = 'mt-4 text-center text-sm font-medium text-red-600';
+                adminPasswordInput.value = '';
+                return;
+            }
+
+            adminMessageEl.textContent = 'Resetting sheet...';
+            adminMessageEl.className = 'mt-4 text-center text-sm font-medium text-gray-500';
+            
+            try {
+                const response = await fetch(`${WEB_APP_URL}?action=reset`, {
+                    method: 'GET',
+                    mode: 'no-cors',
+                    cache: 'no-cache',
+                });
+                
+                adminMessageEl.textContent = 'Sheet reset successfully!';
+                adminMessageEl.className = 'mt-4 text-center text-sm font-medium text-green-600';
+                closeMenu();
+            } catch (error) {
+                adminMessageEl.textContent = 'Error resetting sheet. Please check the browser console.';
+                adminMessageEl.className = 'mt-4 text-center text-sm font-medium text-red-600';
+                console.error('Error:', error);
+            }
+        }
+
+        function renderCharts(dashboardData) {
+            if (propertyChart) propertyChart.destroy();
+            if (sourceChart) sourceChart.destroy();
+
+            const propertyLabels = Object.keys(dashboardData.property);
+            const propertyData = Object.values(dashboardData.property);
+            const sourceLabels = Object.keys(dashboardData.source);
+            const sourceData = Object.values(dashboardData.source);
+
+            const propertyCtx = document.getElementById('propertyChart').getContext('2d');
+            propertyChart = new Chart(propertyCtx, {
+                type: 'bar',
+                data: {
+                    labels: propertyLabels,
+                    datasets: [{
+                        label: 'Enquiry Count',
+                        data: propertyData,
+                        backgroundColor: 'rgba(59, 130, 246, 0.6)',
+                        borderColor: 'rgba(59, 130, 246, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            const sourceCtx = document.getElementById('sourceChart').getContext('2d');
+            sourceChart = new Chart(sourceCtx, {
+                type: 'pie',
+                data: {
+                    labels: sourceLabels,
+                    datasets: [{
+                        label: 'Enquiry Count',
+                        data: sourceData,
+                        backgroundColor: [
+                            '#3b82f6', '#ef4444', '#f97316', '#10b981', '#6366f1'
+                        ],
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed !== null) {
+                                        label += context.parsed;
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
