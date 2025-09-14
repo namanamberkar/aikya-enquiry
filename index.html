@@ -3,114 +3,182 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Homestay Booking Frontend</title>
+    <title>Homestay Enquiry Management</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body {
+        * {
             font-family: 'Inter', sans-serif;
         }
-        /* Custom styles for the hamburger menu */
-        .hamburger-menu {
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .input-focus {
+            transition: all 0.3s ease;
+            border: 2px solid #e5e7eb;
+        }
+        .input-focus:focus {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            border-color: #667eea;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+        .hamburger {
+            display: flex;
+            flex-direction: column;
+            cursor: pointer;
+            padding: 12px;
+            z-index: 1001;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        .hamburger span {
+            width: 28px;
+            height: 3px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 3px 0;
+            transition: 0.3s;
+            border-radius: 2px;
+        }
+        .hamburger.open span:nth-child(1) {
+            transform: rotate(-45deg) translate(-5px, 6px);
+        }
+        .hamburger.open span:nth-child(2) {
+            opacity: 0;
+        }
+        .hamburger.open span:nth-child(3) {
+            transform: rotate(45deg) translate(-5px, -6px);
+        }
+        .menu {
             position: fixed;
             top: 0;
-            right: 0;
-            width: 300px;
-            height: 100%;
-            background-color: white;
-            box-shadow: -2px 0 5px rgba(0,0,0,0.2);
-            transform: translateX(100%);
-            transition: transform 0.3s ease-in-out;
-            z-index: 50;
+            right: -350px;
+            width: 350px;
+            height: 100vh;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            box-shadow: -5px 0 25px rgba(0, 0, 0, 0.1);
+            transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000;
+            padding: 80px 30px 30px;
         }
-        .hamburger-menu.open {
-            transform: translateX(0);
+        .menu.open {
+            right: 0;
         }
         .overlay {
             position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-            z-index: 40;
-            visibility: hidden;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.6);
             opacity: 0;
-            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+            visibility: hidden;
+            transition: opacity 0.4s ease, visibility 0.4s ease;
+            z-index: 999;
+            backdrop-filter: blur(2px);
         }
         .overlay.open {
-            visibility: visible;
             opacity: 1;
+            visibility: visible;
+        }
+        .card-shadow {
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+        .form-label {
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        .menu-item {
+            transition: all 0.3s ease;
+            border-radius: 12px;
+        }
+        .menu-item:hover {
+            background: rgba(102, 126, 234, 0.1);
+            transform: translateX(-5px);
         }
     </style>
 </head>
-<body class="bg-gray-100 p-8 flex items-center justify-center min-h-screen">
-    <!-- Hamburger Icon -->
-    <button onclick="openMenu()" class="fixed top-4 right-4 z-50 p-2 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
-        <svg class="w-8 h-8 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-        </svg>
-    </button>
+<body class="gradient-bg min-h-screen flex items-center justify-center p-4">
+    <!-- Hamburger Menu Button -->
+    <div class="fixed top-6 right-6 z-50">
+        <div id="hamburgerMenu" class="hamburger" onclick="openMenu()">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    </div>
 
-    <!-- Overlay for closing menu -->
+    <!-- Overlay -->
     <div id="overlay" class="overlay" onclick="closeMenu()"></div>
 
-    <!-- Hamburger Menu -->
-    <div id="hamburgerMenu" class="hamburger-menu p-6 flex flex-col space-y-4">
-        <button onclick="closeMenu()" class="self-end p-2 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
-            <svg class="w-6 h-6 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-            </svg>
-        </button>
-        <h2 class="text-xl font-bold text-gray-800 mt-4">Menu</h2>
-        <button onclick="showForm('enquiry')" class="w-full px-6 py-3 text-left font-semibold rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
-            Enquiry Form
-        </button>
-        <button onclick="showForm('update')" class="w-full px-6 py-3 text-left font-semibold rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
-            Update Booking Status
-        </button>
-        <button onclick="showDashboard()" class="w-full px-6 py-3 text-left font-semibold rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
-            View Dashboard
-        </button>
-        <div class="border-t border-gray-200 pt-4 mt-auto">
-            <h2 class="text-xl font-bold text-gray-800 mb-2">Admin Options</h2>
-            <div class="w-full mb-4">
-                <label for="adminPassword" class="block text-sm font-medium text-gray-700 mb-1">Admin Password</label>
-                <input type="password" id="adminPassword" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-            </div>
-            <button type="button" onclick="resetSheet()" class="w-full px-6 py-3 bg-red-600 text-white font-semibold rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200">
-                Reset Sheet
+    <!-- Side Menu -->
+    <div class="menu">
+        <h2 class="text-2xl font-bold text-gray-800 mb-8 text-center">Menu</h2>
+        <div class="space-y-4">
+            <button onclick="showForm('enquiry')" class="menu-item w-full text-left px-6 py-4 text-gray-700 hover:text-purple-600 font-medium">
+                New Enquiry
             </button>
-            <div id="adminMessage" class="mt-4 text-center text-sm font-medium"></div>
+            <button onclick="showForm('update')" class="menu-item w-full text-left px-6 py-4 text-gray-700 hover:text-purple-600 font-medium">
+                Update Status
+            </button>
+            <button onclick="showDashboard()" class="menu-item w-full text-left px-6 py-4 text-gray-700 hover:text-purple-600 font-medium">
+                Dashboard
+            </button>
+            <div class="border-t border-gray-200 pt-4 mt-6">
+                <h3 class="text-sm font-semibold text-gray-600 mb-3 px-6">Admin</h3>
+                <input type="password" id="adminPassword" placeholder="Enter password" class="w-full px-4 py-2 border border-gray-300 rounded-lg mb-3 input-focus">
+                <button onclick="resetSheet()" class="w-full px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors">
+                    Reset Sheet
+                </button>
+                <div id="adminMessage" class="mt-3 text-center text-sm"></div>
+            </div>
         </div>
     </div>
 
     <!-- Enquiry Form Content -->
-    <div id="enquiryFormContainer" class="bg-white p-8 rounded-lg shadow-lg max-w-2xl w-full">
-        <h1 class="text-3xl font-bold text-center mb-6 text-gray-800">Homestay Enquiry Form</h1>
+    <div id="enquiryFormContainer" class="glass-effect p-10 rounded-2xl card-shadow max-w-4xl w-full">
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-800 mb-2">Homestay Enquiry</h1>
+            <p class="text-gray-600">Professional booking management system</p>
+        </div>
         <form id="enquiryForm" class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-                <label for="enquiryId" class="block text-sm font-medium text-gray-700 mb-1">Enquiry ID</label>
-                <input type="text" id="enquiryId" name="Enquiry ID" readonly class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50">
+                <label for="enquiryId" class="block form-label">Enquiry ID</label>
+                <input type="text" id="enquiryId" name="Enquiry ID" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl input-focus bg-gray-50" readonly>
             </div>
             <div>
-                <label for="dateOfEnquiry" class="block text-sm font-medium text-gray-700 mb-1">Date of Enquiry</label>
-                <input type="date" id="dateOfEnquiry" name="Date of Enquiry" readonly class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50">
+                <label for="dateOfEnquiry" class="block form-label">Date of Enquiry</label>
+                <input type="text" id="dateOfEnquiry" name="Date of Enquiry" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl input-focus bg-gray-50" readonly>
             </div>
             <div>
-                <label for="guestName" class="block text-sm font-medium text-gray-700 mb-1">Guest Name</label>
-                <input type="text" id="guestName" name="Guest Name" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <label for="guestName" class="block form-label">Guest Name *</label>
+                <input type="text" id="guestName" name="Guest Name" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl input-focus" required>
             </div>
             <div>
-                <label for="contact" class="block text-sm font-medium text-gray-700 mb-1">Contact (Phone/Email)</label>
-                <input type="text" id="contact" name="Contact (Phone/Email)" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <label for="contact" class="block form-label">Contact (Phone/Email) *</label>
+                <input type="text" id="contact" name="Contact (Phone/Email)" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl input-focus" required>
             </div>
             <div>
-                <label for="propertyName" class="block text-sm font-medium text-gray-700 mb-1">Property Name</label>
-                <select id="propertyName" name="Property Name" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <label for="propertyName" class="block form-label">Property Name *</label>
+                <select id="propertyName" name="Property Name" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl input-focus" required>
                     <option value="" disabled selected>Select a property</option>
                     <option value="1BHK - 401">1BHK - 401</option>
                     <option value="1BHK - 402">1BHK - 402</option>
@@ -129,20 +197,20 @@
                 </select>
             </div>
             <div>
-                <label for="checkInDate" class="block text-sm font-medium text-gray-700 mb-1">Check-in Date</label>
-                <input type="date" id="checkInDate" name="Check-in Date" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <label for="noOfGuests" class="block form-label">Number of Guests *</label>
+                <input type="number" id="noOfGuests" name="No. of Guests" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl input-focus" min="1" required>
             </div>
             <div>
-                <label for="checkOutDate" class="block text-sm font-medium text-gray-700 mb-1">Check-out Date</label>
-                <input type="date" id="checkOutDate" name="Check-out Date" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <label for="checkInDate" class="block form-label">Check-in Date *</label>
+                <input type="date" id="checkInDate" name="Check-in Date" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl input-focus" required>
             </div>
             <div>
-                <label for="noOfGuests" class="block text-sm font-medium text-gray-700 mb-1">No. of Guests</label>
-                <input type="number" id="noOfGuests" name="No. of Guests" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <label for="checkOutDate" class="block form-label">Check-out Date *</label>
+                <input type="date" id="checkOutDate" name="Check-out Date" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl input-focus" required>
             </div>
             <div>
-                <label for="bookingSource" class="block text-sm font-medium text-gray-700 mb-1">Booking Source</label>
-                <select id="bookingSource" name="Booking Source" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <label for="bookingSource" class="block form-label">Booking Source *</label>
+                <select id="bookingSource" name="Booking Source" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl input-focus" required>
                     <option value="" disabled selected>Select a source</option>
                     <option value="Airbnb">Airbnb</option>
                     <option value="Booking.com">Booking.com</option>
@@ -152,8 +220,8 @@
                 </select>
             </div>
             <div>
-                <label for="enquiryStatus" class="block text-sm font-medium text-gray-700 mb-1">Enquiry Status</label>
-                <select id="enquiryStatus" name="Enquiry Status" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                <label for="enquiryStatus" class="block form-label">Enquiry Status *</label>
+                <select id="enquiryStatus" name="Enquiry Status" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl input-focus" required>
                     <option value="" disabled selected>Select a status</option>
                     <option value="New">New</option>
                     <option value="In Progress">In Progress</option>
@@ -162,16 +230,16 @@
                 </select>
             </div>
             <div>
-                <label for="assignedTo" class="block text-sm font-medium text-gray-700 mb-1">Assigned To</label>
-                <input type="text" id="assignedTo" name="Assigned To" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <label for="assignedTo" class="block form-label">Assigned To</label>
+                <input type="text" id="assignedTo" name="Assigned To" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl input-focus">
             </div>
             <div class="md:col-span-2">
-                <label for="remarks" class="block text-sm font-medium text-gray-700 mb-1">Remarks / Follow-up Notes</label>
-                <textarea id="remarks" name="Remarks / Follow-up Notes" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                <label for="remarks" class="block form-label">Remarks / Follow-up Notes</label>
+                <textarea id="remarks" name="Remarks / Follow-up Notes" rows="4" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl input-focus resize-none"></textarea>
             </div>
-            <div class="md:col-span-2 flex justify-between items-center mt-4">
-                <button type="button" onclick="submitForm('enquiry')" class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
-                    Submit
+            <div class="md:col-span-2 flex justify-center mt-6">
+                <button type="button" onclick="submitForm('enquiry')" class="btn-primary px-8 py-4 text-white font-semibold rounded-xl text-lg shadow-lg">
+                    Submit Enquiry
                 </button>
             </div>
         </form>
@@ -179,16 +247,19 @@
     </div>
 
     <!-- Update Form Content -->
-    <div id="updateFormContainer" class="hidden bg-white p-8 rounded-lg shadow-lg max-w-2xl w-full">
-        <h1 class="text-3xl font-bold text-center mb-6 text-gray-800">Update Booking Status</h1>
+    <div id="updateFormContainer" class="hidden glass-effect p-10 rounded-2xl card-shadow max-w-2xl w-full">
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-800 mb-2">Update Booking Status</h1>
+            <p class="text-gray-600">Modify enquiry status and add notes</p>
+        </div>
         <form id="updateForm" class="grid grid-cols-1 gap-6">
             <div>
-                <label for="updateEnquiryId" class="block text-sm font-medium text-gray-700 mb-1">Enquiry ID</label>
-                <input type="text" id="updateEnquiryId" name="Enquiry ID" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                <label for="updateEnquiryId" class="block form-label">Enquiry ID *</label>
+                <input type="text" id="updateEnquiryId" name="Enquiry ID" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl input-focus" required>
             </div>
             <div>
-                <label for="updateEnquiryStatus" class="block text-sm font-medium text-gray-700 mb-1">Enquiry Status</label>
-                <select id="updateEnquiryStatus" name="Enquiry Status" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                <label for="updateEnquiryStatus" class="block form-label">Enquiry Status *</label>
+                <select id="updateEnquiryStatus" name="Enquiry Status" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl input-focus" required>
                     <option value="" disabled selected>Select a status</option>
                     <option value="New">New</option>
                     <option value="In Progress">In Progress</option>
@@ -197,28 +268,31 @@
                 </select>
             </div>
             <div>
-                <label for="updateRemarks" class="block text-sm font-medium text-gray-700 mb-1">Remarks / Follow-up Notes</label>
-                <textarea id="updateRemarks" name="Remarks / Follow-up Notes" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                <label for="updateRemarks" class="block form-label">Remarks / Follow-up Notes</label>
+                <textarea id="updateRemarks" name="Remarks / Follow-up Notes" rows="4" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl input-focus resize-none"></textarea>
             </div>
-            <div class="flex justify-between items-center mt-4">
-                <button type="button" onclick="submitForm('update')" class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
+            <div class="flex justify-center mt-6">
+                <button type="button" onclick="submitForm('update')" class="btn-primary px-8 py-4 text-white font-semibold rounded-xl text-lg shadow-lg">
                     Update Status
                 </button>
             </div>
         </form>
         <div id="updateMessage" class="mt-6 text-center text-sm font-medium"></div>
     </div>
-    
+
     <!-- Dashboard Content -->
-    <div id="dashboardContainer" class="hidden bg-white p-8 rounded-lg shadow-lg max-w-4xl w-full">
-        <h1 class="text-3xl font-bold text-center mb-6 text-gray-800">Enquiry Dashboard</h1>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div class="bg-gray-50 p-6 rounded-lg shadow-inner">
-                <h2 class="text-xl font-semibold text-gray-700 mb-4 text-center">Enquiries by Property</h2>
+    <div id="dashboardContainer" class="hidden glass-effect p-10 rounded-2xl card-shadow max-w-6xl w-full">
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-800 mb-2">Enquiry Dashboard</h1>
+            <p class="text-gray-600">Analytics and insights</p>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="bg-white p-8 rounded-2xl shadow-lg">
+                <h2 class="text-xl font-semibold text-gray-700 mb-6 text-center">Enquiries by Property</h2>
                 <canvas id="propertyChart"></canvas>
             </div>
-            <div class="bg-gray-50 p-6 rounded-lg shadow-inner">
-                <h2 class="text-xl font-semibold text-gray-700 mb-4 text-center">Enquiries by Source</h2>
+            <div class="bg-white p-8 rounded-2xl shadow-lg">
+                <h2 class="text-xl font-semibold text-gray-700 mb-6 text-center">Enquiries by Source</h2>
                 <canvas id="sourceChart"></canvas>
             </div>
         </div>
@@ -240,15 +314,62 @@
 
         let propertyChart, sourceChart;
 
+        // Date formatting functions
+        function formatDateToDDMMYYYY(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+            return `${day}-${month}-${year}`;
+        }
+
+        function formatDateToYYYYMMDD(dateString) {
+            if (!dateString) return '';
+            // If it's already in YYYY-MM-DD format, return as is
+            if (dateString.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                return dateString;
+            }
+            // If it's in DD-MM-YYYY format, convert to YYYY-MM-DD
+            const parts = dateString.split('-');
+            if (parts.length === 3) {
+                return `${parts[2]}-${parts[1]}-${parts[0]}`;
+            }
+            return dateString;
+        }
+
+        // Set minimum date to today for date inputs
+        document.addEventListener('DOMContentLoaded', () => {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('checkInDate').setAttribute('min', today);
+            document.getElementById('checkOutDate').setAttribute('min', today);
+        });
+
+        // Update checkout minimum date when checkin changes
+        document.getElementById('checkInDate').addEventListener('change', function() {
+            const checkInDate = this.value;
+            const checkOutInput = document.getElementById('checkOutDate');
+            if (checkInDate) {
+                checkOutInput.setAttribute('min', checkInDate);
+                // Clear checkout if it's before checkin
+                if (checkOutInput.value && checkOutInput.value < checkInDate) {
+                    checkOutInput.value = '';
+                }
+            }
+        });
+
         function openMenu() {
             hamburgerMenu.classList.add('open');
             overlay.classList.add('open');
+            document.querySelector('.menu').classList.add('open');
         }
 
         function closeMenu() {
             hamburgerMenu.classList.remove('open');
             overlay.classList.remove('open');
+            document.querySelector('.menu').classList.remove('open');
             adminPasswordInput.value = '';
+            adminMessageEl.textContent = '';
         }
 
         function showForm(formType) {
@@ -275,11 +396,19 @@
             updateFormContainer.classList.add('hidden');
             dashboardContainer.classList.remove('hidden');
             
+            const dashboardMessageEl = document.getElementById('dashboardMessage');
             dashboardMessageEl.textContent = 'Fetching dashboard data...';
             dashboardMessageEl.className = 'mt-6 text-center text-sm font-medium text-gray-500';
 
             try {
+                // Correctly fetch the data. The 'no-cors' mode prevented the response from being read.
                 const response = await fetch(`${WEB_APP_URL}?action=getDashboardData`);
+                
+                // Check if the response was successful before trying to parse the JSON
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
                 const result = await response.json();
                 
                 if (result.success) {
@@ -291,7 +420,7 @@
                     dashboardMessageEl.className = 'mt-6 text-center text-sm font-medium text-red-600';
                 }
             } catch (error) {
-                dashboardMessageEl.textContent = 'Network error: Could not fetch data.';
+                dashboardMessageEl.textContent = 'Network error or invalid data: Could not fetch dashboard data.';
                 dashboardMessageEl.className = 'mt-6 text-center text-sm font-medium text-red-600';
                 console.error('Error fetching dashboard data:', error);
             }
@@ -306,7 +435,7 @@
 
             const enquiryId = `ENQ-${year}${month}${day}-${random}`;
             document.getElementById('enquiryId').value = enquiryId;
-            document.getElementById('dateOfEnquiry').value = `${year}-${month}-${day}`;
+            document.getElementById('dateOfEnquiry').value = formatDateToDDMMYYYY(now.toISOString().split('T')[0]);
         }
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -320,6 +449,17 @@
             if (formType === 'enquiry') {
                 form = document.getElementById('enquiryForm');
                 messageEl = enquiryMessageEl;
+                
+                // Validate dates
+                const checkInDate = document.getElementById('checkInDate').value;
+                const checkOutDate = document.getElementById('checkOutDate').value;
+                
+                if (checkInDate && checkOutDate && checkOutDate <= checkInDate) {
+                    messageEl.textContent = 'Check-out date must be after check-in date';
+                    messageEl.className = 'mt-6 text-center text-sm font-medium text-red-600';
+                    return;
+                }
+                
                 const formData = new FormData(form);
                 formData.forEach((value, key) => data[key] = value);
                 data.action = 'addEnquiry';
@@ -335,6 +475,8 @@
             messageEl.className = 'mt-6 text-center text-sm font-medium text-gray-500';
 
             try {
+                // The 'no-cors' mode is appropriate here since this is a POST request
+                // and we don't expect a response body back from the Google Apps Script.
                 const response = await fetch(WEB_APP_URL, {
                     method: 'POST',
                     mode: 'no-cors',
@@ -348,9 +490,6 @@
                 messageEl.textContent = 'Data submitted successfully!';
                 messageEl.className = 'mt-6 text-center text-sm font-medium text-green-600';
 
-                // We can't read the response from a no-cors fetch, so we just assume success.
-                // The backend now returns a success message we can trust.
-                // We'll reset the form to be ready for the next entry.
                 if (formType === 'enquiry') {
                     form.reset();
                     generateEnquiryIDAndDate();
@@ -410,16 +549,31 @@
                     datasets: [{
                         label: 'Enquiry Count',
                         data: propertyData,
-                        backgroundColor: 'rgba(59, 130, 246, 0.6)',
-                        borderColor: 'rgba(59, 130, 246, 1)',
-                        borderWidth: 1
+                        backgroundColor: 'rgba(102, 126, 234, 0.8)',
+                        borderColor: 'rgba(102, 126, 234, 1)',
+                        borderWidth: 2,
+                        borderRadius: 8,
+                        borderSkipped: false,
                     }]
                 },
                 options: {
                     responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
                     scales: {
                         y: {
-                            beginAtZero: true
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
                         }
                     }
                 }
@@ -427,23 +581,28 @@
 
             const sourceCtx = document.getElementById('sourceChart').getContext('2d');
             sourceChart = new Chart(sourceCtx, {
-                type: 'pie',
+                type: 'doughnut',
                 data: {
                     labels: sourceLabels,
                     datasets: [{
                         label: 'Enquiry Count',
                         data: sourceData,
                         backgroundColor: [
-                            '#3b82f6', '#ef4444', '#f97316', '#10b981', '#6366f1'
+                            '#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe'
                         ],
-                        hoverOffset: 4
+                        borderWidth: 0,
+                        hoverOffset: 8
                     }]
                 },
                 options: {
                     responsive: true,
                     plugins: {
                         legend: {
-                            position: 'top',
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                usePointStyle: true
+                            }
                         },
                         tooltip: {
                             callbacks: {
