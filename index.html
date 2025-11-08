@@ -3,2613 +3,673 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Property Booking & Admin Dashboard</title>
-    <!-- Tailwind CSS CDN -->
+    <title>Homestay Enquiry Management</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome for Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- Supabase JS -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root {
-            --primary: #4f46e5;
-            --primary-light: #818cf8;
-            --primary-dark: #3730a3;
-            --secondary: #0ea5e9;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-            --dark: #1e293b;
-            --light: #f8fafc;
-            --gray: #64748b;
-            --gray-light: #e2e8f0;
-        }
-        
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
         body {
             font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+            background-color: #FFF0C4;
             min-height: 100vh;
-            -webkit-tap-highlight-color: transparent;
+            color: #3E0703;
         }
-        
-        .glass-card {
-            background: rgba(255, 255, 255, 0.85);
+
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.7);
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
         }
-        
-        .tab-button.active {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-            color: white;
-            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+
+        .card-shadow {
+            box-shadow: 0 8px 32px 0 rgba(140, 16, 7, 0.3);
         }
-        
-        .calendar-cell {
-            padding: 8px;
+
+        .form-label {
+            font-weight: 600;
+            color: #3E0703;
+            margin-bottom: 8px;
+        }
+
+        .input-focus {
+            transition: all 0.3s ease;
+        }
+
+        .input-focus:focus {
+            outline: none;
+            border-color: #8C1007;
+            box-shadow: 0 0 0 3px rgba(140, 16, 7, 0.2);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #8C1007 0%, #660B05 100%);
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(140, 16, 7, 0.3);
+        }
+
+        .hamburger {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.9);
             border-radius: 12px;
-            cursor: pointer;
-            text-align: center;
-            font-weight: 500;
-            transition: all 0.2s ease;
-            min-height: 50px;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-        }
-        
-        .all-available { 
-            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); 
-            color: #065f46; 
-            border: 1px solid #a7f3d0; 
-        }
-        .partial-available { 
-            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); 
-            color: #b45309; 
-            border: 1px solid #fde68a; 
-        }
-        .none-available { 
-            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); 
-            color: #991b1b; 
-            border: 1px solid #fecaca; 
-        }
-        .past-day { 
-            background: #f1f5f9; 
-            color: #94a3b8; 
-            cursor: default; 
-        }
-        .selected-date { 
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%) !important; 
-            color: white !important;
-            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);
-        }
-        
-        .property-card {
+            cursor: pointer;
             transition: all 0.3s ease;
-            border-radius: 16px;
-            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
-        
-        .property-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
-        }
-        
-        .property-card.selected {
-            box-shadow: 0 0 0 3px var(--primary), 0 12px 24px rgba(79, 70, 229, 0.2);
-        }
-        
-        .gradient-bg {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-        }
-        
-        .gradient-text {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-            color: white;
-            transition: all 0.3s ease;
-        }
-        
-        .btn-primary:hover {
-            box-shadow: 0 8px 20px rgba(79, 70, 229, 0.4);
-            transform: translateY(-2px);
-        }
-        
-        .btn-danger {
-            background: linear-gradient(135deg, var(--danger) 0%, #f97316 100%);
-            color: white;
-            transition: all 0.3s ease;
-        }
-        
-        .btn-danger:hover {
-            box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4);
-            transform: translateY(-2px);
-        }
-        
-        .btn-success {
-            background: linear-gradient(135deg, var(--success) 0%, #22c55e 100%);
-            color: white;
-            transition: all 0.3s ease;
-        }
-        
-        .btn-success:hover {
-            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
-            transform: translateY(-2px);
-        }
-        
-        .section-header {
-            position: relative;
-            padding-bottom: 12px;
-            margin-bottom: 24px;
-        }
-        
-        .section-header::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 60px;
-            height: 4px;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-            border-radius: 2px;
-        }
-        
-        /* Custom scrollbar */
-        ::-webkit-scrollbar { 
-            width: 8px; 
-        }
-        ::-webkit-scrollbar-track { 
-            background: #f1f5f9; 
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb { 
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); 
-            border-radius: 4px; 
-        }
-        ::-webkit-scrollbar-thumb:hover { 
-            background: var(--primary-dark); 
-        }
-        
-        /* Animation for tabs */
-        .tab-content {
-            animation: fadeIn 0.5s ease;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        /* Status badges */
-        .status-badge {
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-        
-        .status-available {
-            background: rgba(16, 185, 129, 0.1);
-            color: var(--success);
-        }
-        
-        .status-pending {
-            background: rgba(245, 158, 11, 0.1);
-            color: var(--warning);
-        }
-        
-        .status-booked {
-            background: rgba(239, 68, 68, 0.1);
-            color: var(--danger);
-        }
-        
-        /* Form styling */
-        .form-input {
-            border: 1px solid var(--gray-light);
-            border-radius: 12px;
-            transition: all 0.3s ease;
-            background: white;
-        }
-        
-        .form-input:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
-        }
-        
-        /* Stats cards */
-        .stat-card {
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-            transition: all 0.3s ease;
-            overflow: hidden;
-        }
-        
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
-        }
-        
-        /* Loading animation */
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.5; }
-            100% { opacity: 1; }
-        }
-        
-        .loading {
-            animation: pulse 1.5s infinite;
-        }
-        
-        /* Search highlight */
-        .search-highlight {
-            background-color: #fef3c7;
-            padding: 2px 4px;
-            border-radius: 4px;
-            font-weight: 600;
-        }
-        
-        /* Quick actions */
-        .quick-action-btn {
-            transition: all 0.3s ease;
-        }
-        
-        .quick-action-btn:hover {
+
+        .hamburger:hover {
+            background: rgba(255, 255, 255, 1);
             transform: scale(1.05);
         }
-        
-        /* User role badges */
-        .role-badge {
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 0.7rem;
-            font-weight: 600;
+
+        .hamburger span {
+            width: 25px;
+            height: 3px;
+            background: #3E0703;
+            margin: 2px 0;
+            transition: 0.3s;
+            border-radius: 2px;
         }
-        
-        .role-admin {
-            background: rgba(239, 68, 68, 0.1);
-            color: var(--danger);
+
+        .hamburger.open span:nth-child(1) {
+            transform: rotate(-45deg) translate(-5px, 6px);
         }
-        
-        .role-staff {
-            background: rgba(59, 130, 246, 0.1);
-            color: #3b82f6;
+
+        .hamburger.open span:nth-child(2) {
+            opacity: 0;
         }
-        
-        /* User card */
-        .user-card {
-            transition: all 0.3s ease;
-            border-radius: 12px;
+
+        .hamburger.open span:nth-child(3) {
+            transform: rotate(45deg) translate(-5px, -6px);
         }
-        
-        .user-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-        }
-        
-        /* Check-in card styling */
-        .checkin-card {
-            transition: all 0.3s ease;
-            border-radius: 12px;
-            overflow: hidden;
-        }
-        
-        .checkin-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-        }
-        
-        .checkin-today {
-            border-left: 4px solid #10b981;
-        }
-        
-        .checkin-future {
-            border-left: 4px solid #f59e0b;
-        }
-        
-        .checkin-past {
-            border-left: 4px solid #6b7280;
-        }
-        
-        /* FIXED: Better scrolling for tables */
-        .table-container {
-            overflow-x: auto;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            background: white;
-            -webkit-overflow-scrolling: touch;
-        }
-        
-        .table-container table {
-            min-width: 800px;
-            width: 100%;
-        }
-        
-        .table-container th {
-            position: sticky;
+
+        .menu {
+            position: fixed;
             top: 0;
-            background: #4f46e5;
-            color: white;
-            z-index: 10;
+            right: -350px;
+            width: 350px;
+            height: 100vh;
+            background: rgba(255, 240, 196, 0.95); /* Adjusted to match palette */
+            backdrop-filter: blur(20px);
+            z-index: 999;
+            transition: right 0.3s ease;
+            overflow-y: auto;
+            padding: 100px 20px 30px 20px;
         }
-        
-        /* Mobile-specific styles */
-        @media (max-width: 768px) {
-            .mobile-scrollable {
-                overflow-x: auto;
-                -webkit-overflow-scrolling: touch;
-            }
-            
-            .mobile-padding {
-                padding-left: 1rem;
-                padding-right: 1rem;
-            }
-            
-            .mobile-tabs {
-                flex-wrap: nowrap;
-                overflow-x: auto;
-                -webkit-overflow-scrolling: touch;
-                padding-bottom: 8px;
-            }
-            
-            .mobile-tab {
-                flex-shrink: 0;
-                white-space: nowrap;
-            }
-            
-            .mobile-stats {
-                flex-wrap: wrap;
-                justify-content: space-between;
-            }
-            
-            .mobile-stat {
-                flex: 0 0 calc(50% - 0.5rem);
-                margin-bottom: 1rem;
-            }
-            
-            .mobile-form-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .mobile-calendar-grid {
-                grid-template-columns: repeat(7, minmax(40px, 1fr));
-                gap: 4px;
-                font-size: 0.875rem;
-            }
-            
-            .mobile-calendar-cell {
-                min-height: 40px;
-                padding: 4px;
-            }
-            
-            .mobile-calendar-header {
-                font-size: 0.75rem;
-            }
-            
-            .mobile-table {
-                font-size: 0.875rem;
-                min-width: 600px;
-            }
-            
-            .mobile-table th, 
-            .mobile-table td {
-                padding: 0.5rem;
-                white-space: nowrap;
-            }
-            
-            .mobile-button {
-                padding: 0.75rem 1rem;
-                font-size: 0.875rem;
-            }
-            
-            .mobile-text-lg {
-                font-size: 1.125rem;
-            }
-            
-            .mobile-text-xl {
-                font-size: 1.25rem;
-            }
-            
-            .mobile-text-2xl {
-                font-size: 1.5rem;
-            }
-            
-            .mobile-text-3xl {
-                font-size: 1.875rem;
-            }
-            
-            .mobile-text-4xl {
-                font-size: 2.25rem;
-            }
-            
-            /* Improved mobile table scrolling */
-            .table-container {
-                border-radius: 8px;
-                margin: 0 -1rem;
-                width: calc(100% + 2rem);
-            }
-            
-            .table-container table {
-                min-width: 700px;
-            }
+
+        .menu.open {
+            right: 0;
         }
-        
-        /* iPhone notch and home indicator safe areas */
-        @supports(padding: max(0px)) {
-            .safe-area-top {
-                padding-top: max(1rem, env(safe-area-inset-top));
-            }
-            
-            .safe-area-bottom {
-                padding-bottom: max(1rem, env(safe-area-inset-bottom));
-            }
-            
-            .safe-area-left {
-                padding-left: max(1rem, env(safe-area-inset-left));
-            }
-            
-            .safe-area-right {
-                padding-right: max(1rem, env(safe-area-inset-right));
-            }
+
+        .menu-item {
+            transition: all 0.3s ease;
+            border-radius: 12px;
+            margin: 0;
         }
-        
-        /* Touch-friendly interactions */
-        .touch-target {
-            min-height: 44px;
-            min-width: 44px;
+
+        .menu-item:hover {
+            background: rgba(140, 16, 7, 0.1);
+            transform: translateX(-5px);
         }
-        
-        /* Hide scrollbar for mobile tabs */
-        .mobile-tabs::-webkit-scrollbar {
-            display: none;
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 998;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
         }
-        
-        .mobile-tabs {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
-        
-        /* Improved focus states for accessibility */
-        button:focus-visible,
-        input:focus-visible,
-        select:focus-visible {
-            outline: 2px solid var(--primary);
-            outline-offset: 2px;
-        }
-        
-        /* Prevent zoom on input focus for iOS */
-        @media (max-width: 768px) {
-            input, select, textarea {
-                font-size: 16px; /* Prevents zoom on iOS */
-            }
+
+        .overlay.open {
+            opacity: 1;
+            visibility: visible;
         }
     </style>
 </head>
-<body class="min-h-screen antialiased">
-    <div id="app" class="max-w-7xl mx-auto p-4 md:p-8 safe-area-top safe-area-bottom safe-area-left safe-area-right">
-        <!-- Header -->
-        <header class="mb-8 md:mb-12">
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 md:gap-6">
-                <div class="w-full md:w-auto">
-                    <h1 class="mobile-text-3xl md:text-4xl lg:text-5xl font-extrabold text-gray-900 flex items-center">
-                        <div class="gradient-bg p-2 md:p-3 rounded-xl md:rounded-2xl mr-3 md:mr-4 shadow-lg">
-                            <i class="fas fa-home text-white text-xl md:text-2xl"></i>
-                        </div>
-                        <span class="gradient-text">Aikya</span> Property Manager
-                    </h1>
-                    <p class="text-gray-600 mt-2 text-base md:text-lg">Streamlined property booking and management system</p>
-                </div>
-                
-                <!-- Quick Stats -->
-                <div class="flex mobile-stats w-full md:w-auto mt-4 md:mt-0">
-                    <div class="stat-card mobile-stat p-3 md:p-4">
-                        <div class="flex items-center">
-                            <div class="p-2 rounded-lg bg-blue-50 text-blue-500 mr-3">
-                                <i class="fas fa-building"></i>
-                            </div>
-                            <div>
-                                <p class="mobile-text-xl md:text-2xl font-bold text-gray-900" id="property-count">0</p>
-                                <p class="text-xs md:text-sm text-gray-500">Properties</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="stat-card mobile-stat p-3 md:p-4">
-                        <div class="flex items-center">
-                            <div class="p-2 rounded-lg bg-green-50 text-green-500 mr-3">
-                                <i class="fas fa-calendar-check"></i>
-                            </div>
-                            <div>
-                                <p class="mobile-text-xl md:text-2xl font-bold text-gray-900" id="booking-count">0</p>
-                                <p class="text-xs md:text-sm text-gray-500">Bookings</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="stat-card mobile-stat p-3 md:p-4">
-                        <div class="flex items-center">
-                            <div class="p-2 rounded-lg bg-purple-50 text-purple-500 mr-3">
-                                <i class="fas fa-calendar-day"></i>
-                            </div>
-                            <div>
-                                <p class="mobile-text-xl md:text-2xl font-bold text-gray-900" id="today-checkin-count">0</p>
-                                <p class="text-xs md:text-sm text-gray-500">Today's Check-ins</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </header>
+<body class="flex items-center justify-center p-6">
+    <!-- Hamburger Menu -->
+    <div id="hamburgerMenu" class="hamburger" onclick="openMenu()">
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
 
-        <!-- Navigation Tabs -->
-        <div class="glass-card rounded-xl md:rounded-2xl p-2 mb-6 md:mb-8 sticky top-0 md:top-4 z-10">
-            <nav class="flex mobile-tabs gap-2" id="nav-tabs">
-                <button data-tab="checkins" class="tab-button mobile-tab py-2 md:py-3 px-3 md:px-5 text-xs md:text-sm font-semibold rounded-lg md:rounded-xl transition-all duration-300 flex items-center active touch-target">
-                    <i class="fas fa-calendar-day mr-1 md:mr-2"></i>Today's Check-ins
-                </button>
-                <button data-tab="booking" class="tab-button mobile-tab py-2 md:py-3 px-3 md:px-5 text-xs md:text-sm font-semibold rounded-lg md:rounded-xl transition-all duration-300 flex items-center touch-target">
-                    <i class="fas fa-calendar-alt mr-1 md:mr-2"></i>Booking
-                </button>
-                <button data-tab="availability" class="tab-button mobile-tab py-2 md:py-3 px-3 md:px-5 text-xs md:text-sm font-semibold rounded-lg md:rounded-xl transition-all duration-300 flex items-center touch-target">
-                    <i class="fas fa-calendar-check mr-1 md:mr-2"></i>Availability
-                </button>
-                <button data-tab="reports" class="tab-button mobile-tab py-2 md:py-3 px-3 md:px-5 text-xs md:text-sm font-semibold rounded-lg md:rounded-xl transition-all duration-300 flex items-center touch-target">
-                    <i class="fas fa-chart-line mr-1 md:mr-2"></i>Reports & Sync
-                </button>
-                <button data-tab="properties" class="tab-button mobile-tab py-2 md:py-3 px-3 md:px-5 text-xs md:text-sm font-semibold rounded-lg md:rounded-xl transition-all duration-300 flex items-center touch-target">
-                    <i class="fas fa-list-ul mr-1 md:mr-2"></i>Properties
-                </button>
-                <button data-tab="admin" class="tab-button mobile-tab py-2 md:py-3 px-3 md:px-5 text-xs md:text-sm font-semibold rounded-lg md:rounded-xl transition-all duration-300 flex items-center touch-target">
-                    <i class="fas fa-user-shield mr-1 md:mr-2"></i>Admin
-                </button>
-            </nav>
+    <!-- Overlay -->
+    <div id="overlay" class="overlay" onclick="closeMenu()"></div>
+
+    <!-- Side Menu -->
+    <div class="menu">
+        <div class="flex flex-col items-center mb-8">
+            <!-- Logo from local file -->
+            <img src="icon (1).png" alt="Company Logo" class="w-24 h-24 rounded-full mb-4">
+            <h2 class="text-2xl font-bold text-[#3E0703] text-center">Menu</h2>
         </div>
-
-        <!-- Tab Content Containers -->
-        <div class="space-y-6 md:space-y-8">
-            
-            <!-- Today's Check-ins Tab -->
-            <div id="tab-checkins" class="tab-content">
-                <div class="glass-card rounded-xl md:rounded-2xl p-4 md:p-6 lg:p-8">
-                    <h2 class="mobile-text-2xl md:text-3xl font-bold text-gray-900 mb-2 section-header">Today's Check-ins</h2>
-                    
-                    <!-- Date Filter -->
-                    <div class="mb-6 md:mb-8 p-4 md:p-6 lg:p-8 rounded-xl md:rounded-2xl bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-100 shadow-sm">
-                        <h3 class="mobile-text-lg md:text-xl font-bold text-purple-700 mb-4 md:mb-6 flex items-center">
-                            <div class="p-2 rounded-lg bg-purple-100 text-purple-600 mr-2 md:mr-3">
-                                <i class="fas fa-filter"></i>
-                            </div>
-                            Filter Check-ins by Date
-                        </h3>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
-                            <div class="md:col-span-2">
-                                <label for="checkin-filter-date" class="block text-sm font-medium text-gray-700 mb-2">Select Date</label>
-                                <input type="date" id="checkin-filter-date" class="w-full p-3 md:p-4 form-input touch-target">
-                            </div>
-                            <div class="flex gap-2">
-                                <button onclick="filterCheckinsByDate()" class="btn-primary flex-1 px-4 md:px-6 py-3 md:py-4 font-semibold rounded-lg md:rounded-xl shadow-lg flex items-center justify-center touch-target mobile-button">
-                                    <i class="fas fa-search mr-1 md:mr-2"></i> Filter
-                                </button>
-                                <button onclick="resetCheckinFilter()" class="px-3 md:px-4 py-3 md:py-4 text-gray-600 bg-gray-200 rounded-lg md:rounded-xl hover:bg-gray-300 transition flex items-center touch-target">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <div id="checkin-filter-info" class="mt-4 text-sm font-medium text-gray-600">
-                            <!-- Filter info will appear here -->
-                        </div>
-                    </div>
-
-                    <!-- Check-ins List -->
-                    <div>
-                        <h3 class="mobile-text-xl md:text-2xl font-bold text-gray-900 mb-4 md:mb-6 flex items-center section-header">
-                            <div class="p-2 rounded-lg bg-green-100 text-green-600 mr-2 md:mr-3">
-                                <i class="fas fa-key"></i>
-                            </div>
-                            Check-ins
-                        </h3>
-                        <div id="checkin-list-container" class="space-y-4">
-                            <!-- Check-ins will be rendered here -->
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Booking Entry/Cancellation Tab -->
-            <div id="tab-booking" class="tab-content hidden">
-                <div class="glass-card rounded-xl md:rounded-2xl p-4 md:p-6 lg:p-8">
-                    <h2 class="mobile-text-2xl md:text-3xl font-bold text-gray-900 mb-2 section-header">New Booking & Cancellation</h2>
-
-                    <!-- Booking Form -->
-                    <div class="mb-8 md:mb-10 p-4 md:p-6 lg:p-8 rounded-xl md:rounded-2xl bg-gradient-to-br from-indigo-50 to-blue-50 border border-indigo-100 shadow-sm">
-                        <h3 class="mobile-text-lg md:text-xl font-bold text-indigo-700 mb-4 md:mb-6 flex items-center">
-                            <div class="p-2 rounded-lg bg-indigo-100 text-indigo-600 mr-2 md:mr-3">
-                                <i class="fas fa-book-open"></i>
-                            </div>
-                            Create New Booking
-                        </h3>
-                        <form id="booking-form" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mobile-form-grid">
-
-                            <!-- Guest Name -->
-                            <div>
-                                <label for="guestName" class="block text-sm font-medium text-gray-700 mb-2">Guest Name</label>
-                                <input type="text" id="guestName" required class="w-full p-3 md:p-4 form-input touch-target">
-                            </div>
-
-                            <!-- Phone Number -->
-                            <div>
-                                <label for="phoneNumber" class="block text-sm font-medium text-gray-700 mb-2">Phone Number (Optional)</label>
-                                <input type="tel" id="phoneNumber" class="w-full p-3 md:p-4 form-input touch-target">
-                            </div>
-
-                            <!-- Check-in Date -->
-                            <div>
-                                <label for="checkInDate" class="block text-sm font-medium text-gray-700 mb-2">Check-in Date</label>
-                                <input type="date" id="checkInDate" required class="w-full p-3 md:p-4 form-input touch-target">
-                            </div>
-
-                            <!-- Check-out Date -->
-                            <div>
-                                <label for="checkOutDate" class="block text-sm font-medium text-gray-700 mb-2">Check-out Date</label>
-                                <input type="date" id="checkOutDate" required class="w-full p-3 md:p-4 form-input touch-target">
-                            </div>
-
-                            <!-- Property Selector (GRID VIEW) -->
-                            <div class="md:col-span-2 lg:col-span-3">
-                                <label class="block text-sm font-medium text-gray-700 mb-3">Select Available Property</label>
-                                
-                                <!-- Hidden input to store selected ID -->
-                                <input type="hidden" id="selectedPropertyId" required data-required-message="Please select a property from the grid.">
-
-                                <div id="property-grid-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
-                                    <!-- Properties will be rendered here -->
-                                </div>
-                                
-                                <p id="property-status" class="text-sm mt-3 font-medium text-gray-600"></p>
-                            </div>
-
-                            <!-- Source -->
-                            <div>
-                                <label for="source" class="block text-sm font-medium text-gray-700 mb-2">Source</label>
-                                <select id="source" required class="w-full p-3 md:p-4 form-input bg-white touch-target">
-                                    <option value="Direct">Direct</option>
-                                    <option value="Airbnb">Airbnb</option>
-                                    <option value="Booking.com">Booking.com</option>
-                                    <option value="Other">Other</option>
-                                </select>
-                            </div>
-
-                            <!-- Amount Paid -->
-                            <div>
-                                <label for="amountPaid" class="block text-sm font-medium text-gray-700 mb-2">Amount Paid (₹)</label>
-                                <input type="number" id="amountPaid" required min="0" step="0.01" class="w-full p-3 md:p-4 form-input touch-target">
-                            </div>
-                            
-                            <!-- Submit Button -->
-                            <div class="md:col-span-2 lg:col-span-3 pt-4">
-                                <button type="submit" class="btn-primary w-full md:w-auto px-6 md:px-8 py-3 md:py-4 font-semibold rounded-lg md:rounded-xl shadow-lg disabled:opacity-50 flex items-center justify-center touch-target mobile-button" id="book-button">
-                                    <i class="fas fa-calendar-check mr-2"></i> Create Booking
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-
-                    <!-- Cancellation Section -->
-                    <div class="p-4 md:p-6 lg:p-8 rounded-xl md:rounded-2xl bg-gradient-to-br from-red-50 to-orange-50 border border-red-100 shadow-sm">
-                        <h3 class="mobile-text-lg md:text-xl font-bold text-red-700 mb-4 md:mb-6 flex items-center">
-                            <div class="p-2 rounded-lg bg-red-100 text-red-600 mr-2 md:mr-3">
-                                <i class="fas fa-times-circle"></i>
-                            </div>
-                            Cancel Booking
-                        </h3>
-                        <div class="flex flex-col md:flex-row gap-4 items-end">
-                            <div class="flex-grow w-full md:w-auto">
-                                <label for="bookingIdCancel" class="block text-sm font-medium text-gray-700 mb-2">Booking ID</label>
-                                <input type="text" id="bookingIdCancel" placeholder="Enter Booking ID (e.g., BKG-12345)" class="w-full p-3 md:p-4 form-input touch-target">
-                            </div>
-                            <button onclick="handleCancellation()" class="btn-danger w-full md:w-auto px-4 md:px-6 py-3 md:py-4 font-semibold rounded-lg md:rounded-xl shadow-lg flex items-center justify-center touch-target mobile-button">
-                                <i class="fas fa-trash-alt mr-1 md:mr-2"></i> Confirm Cancellation
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Availability Calendar Tab -->
-            <div id="tab-availability" class="tab-content hidden">
-                <div class="glass-card rounded-xl md:rounded-2xl p-4 md:p-6 lg:p-8">
-                    <h2 class="mobile-text-2xl md:text-3xl font-bold text-gray-900 mb-2 section-header">Property Availability Calendar</h2>
-
-                    <!-- Calendar View -->
-                    <div class="mb-6 md:mb-8 p-4 md:p-6 lg:p-8 rounded-xl md:rounded-2xl bg-gradient-to-br from-teal-50 to-cyan-50 border border-teal-100 shadow-sm">
-                        <div class="flex flex-col md:flex-row justify-between items-center mb-4 md:mb-6 gap-4">
-                            <button onclick="changeMonth(-1)" class="btn-primary w-full md:w-auto px-4 md:px-5 py-2 md:py-3 rounded-lg md:rounded-xl flex items-center justify-center touch-target mobile-button">
-                                <i class="fas fa-arrow-left mr-1 md:mr-2"></i> Previous
-                            </button>
-                            <h3 id="current-month-year" class="mobile-text-xl md:text-2xl font-bold text-gray-800 text-center"></h3>
-                            <button onclick="changeMonth(1)" class="btn-primary w-full md:w-auto px-4 md:px-5 py-2 md:py-3 rounded-lg md:rounded-xl flex items-center justify-center touch-target mobile-button">
-                                Next <i class="fas fa-arrow-right ml-1 md:ml-2"></i>
-                            </button>
-                        </div>
-
-                        <div class="grid grid-cols-7 text-center font-bold text-gray-600 mb-3 md:mb-4 mobile-calendar-header">
-                            <span class="p-1 md:p-2">Sun</span><span class="p-1 md:p-2">Mon</span><span class="p-1 md:p-2">Tue</span><span class="p-1 md:p-2">Wed</span><span class="p-1 md:p-2">Thu</span><span class="p-1 md:p-2">Fri</span><span class="p-1 md:p-2">Sat</span>
-                        </div>
-
-                        <div id="calendar-grid" class="grid grid-cols-7 gap-1 md:gap-2 mobile-calendar-grid">
-                            <!-- Calendar Cells will be rendered here -->
-                        </div>
-
-                        <div class="mt-6 md:mt-8 flex flex-wrap justify-center gap-4 md:gap-6 text-xs md:text-sm font-medium">
-                            <div class="flex items-center"><span class="h-3 w-3 md:h-4 md:w-4 rounded-full bg-green-100 border border-green-300 mr-1 md:mr-2"></span> Fully Available</div>
-                            <div class="flex items-center"><span class="h-3 w-3 md:h-4 md:w-4 rounded-full bg-yellow-100 border border-yellow-300 mr-1 md:mr-2"></span> Partially Available</div>
-                            <div class="flex items-center"><span class="h-3 w-3 md:h-4 md:w-4 rounded-full bg-red-100 border border-red-300 mr-1 md:mr-2"></span> Fully Booked</div>
-                            <div class="flex items-center"><span class="h-3 w-3 md:h-4 md:w-4 rounded-full bg-blue-100 border border-blue-300 mr-1 md:mr-2"></span> Selected</div>
-                        </div>
-                    </div>
-
-                    <!-- Selected Dates Section -->
-                    <div class="p-4 md:p-6 lg:p-8 rounded-xl md:rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 shadow-sm mb-6 md:mb-8">
-                        <h3 class="mobile-text-lg md:text-xl font-bold text-blue-700 mb-4 md:mb-6 flex items-center">
-                            <div class="p-2 rounded-lg bg-blue-100 text-blue-600 mr-2 md:mr-3">
-                                <i class="fas fa-calendar-day"></i>
-                            </div>
-                            Selected Dates
-                        </h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 items-end">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Check-in Date</label>
-                                <input type="text" id="calendarCheckIn" readonly class="w-full p-3 md:p-4 border border-blue-200 rounded-lg md:rounded-xl bg-blue-50 text-blue-700 font-medium">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Check-out Date</label>
-                                <input type="text" id="calendarCheckOut" readonly class="w-full p-3 md:p-4 border border-blue-200 rounded-lg md:rounded-xl bg-blue-50 text-blue-700 font-medium">
-                            </div>
-                        </div>
-                        <div class="mt-4 md:mt-6 flex flex-col md:flex-row gap-2 md:gap-3">
-                            <button onclick="clearCalendarSelection()" class="px-4 md:px-5 py-2 md:py-3 text-sm bg-gray-500 text-white rounded-lg md:rounded-xl hover:bg-gray-600 transition flex items-center justify-center touch-target mobile-button">
-                                <i class="fas fa-times mr-1 md:mr-2"></i> Clear Selection
-                            </button>
-                            <button onclick="useCalendarDatesForBooking()" class="btn-primary px-4 md:px-5 py-2 md:py-3 text-sm rounded-lg md:rounded-xl flex items-center justify-center touch-target mobile-button">
-                                <i class="fas fa-hand-point-right mr-1 md:mr-2"></i> Use These Dates for Booking
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Range Check & Booking Link -->
-                    <div class="p-4 md:p-6 lg:p-8 rounded-xl md:rounded-2xl bg-gradient-to-br from-indigo-50 to-purple-50 border border-indigo-100 shadow-sm">
-                        <h3 class="mobile-text-lg md:text-xl font-bold text-indigo-700 mb-4 md:mb-6 flex items-center">
-                            <div class="p-2 rounded-lg bg-indigo-100 text-indigo-600 mr-2 md:mr-3">
-                                <i class="fas fa-search-plus"></i>
-                            </div>
-                            Check Availability Range
-                        </h3>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 items-end">
-                            <div class="md:col-span-2">
-                                <label for="availCheckIn" class="block text-sm font-medium text-gray-700 mb-2">Check-in Date</label>
-                                <input type="date" id="availCheckIn" required class="w-full p-3 md:p-4 form-input touch-target">
-                            </div>
-                            <div class="md:col-span-2">
-                                <label for="availCheckOut" class="block text-sm font-medium text-gray-700 mb-2">Check-out Date</label>
-                                <input type="date" id="availCheckOut" required class="w-full p-3 md:p-4 form-input touch-target">
-                            </div>
-                            <div class="md:col-span-2 lg:col-span-1">
-                                <button onclick="handleAvailabilityRangeCheck()" class="btn-primary w-full px-4 md:px-6 py-3 md:py-4 font-semibold rounded-lg md:rounded-xl shadow-lg flex items-center justify-center touch-target mobile-button">
-                                    <i class="fas fa-list-ol mr-1 md:mr-2"></i> Find Available Properties
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Available Property List for Range -->
-                        <div id="available-properties-for-range" class="mt-6 md:mt-8 space-y-3 md:space-y-4">
-                            <p id="range-status" class="text-gray-600 text-center p-3 md:p-4 bg-gray-50 rounded-lg md:rounded-xl">Select a date range to check availability.</p>
-                            <!-- Available Properties List will be rendered here -->
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Bookings and Reports Tab -->
-            <div id="tab-reports" class="tab-content hidden">
-                <div class="glass-card rounded-xl md:rounded-2xl p-4 md:p-6 lg:p-8">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="mobile-text-2xl md:text-3xl font-bold text-gray-900 section-header">Bookings & Google Sheets Sync</h2>
-                        <div class="flex gap-2">
-                            <button onclick="pullFromSheets()" class="btn-primary px-4 md:px-6 py-2 md:py-3 text-sm font-semibold rounded-lg md:rounded-xl shadow-lg flex items-center touch-target mobile-button">
-                                <i class="fas fa-download mr-1 md:mr-2"></i> Pull from Sheets
-                            </button>
-                            <button onclick="manualSyncAll()" class="btn-success px-4 md:px-6 py-2 md:py-3 text-sm font-semibold rounded-lg md:rounded-xl shadow-lg flex items-center touch-target mobile-button">
-                                <i class="fas fa-sync-alt mr-1 md:mr-2"></i> Full Sync
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Google Sheets Configuration -->
-                    <div class="mb-8 md:mb-10 p-4 md:p-6 lg:p-8 rounded-xl md:rounded-2xl bg-gradient-to-br from-green-50 to-emerald-50 border border-green-100 shadow-sm">
-                        <h3 class="mobile-text-lg md:text-xl font-bold text-green-700 mb-4 md:mb-6 flex items-center">
-                            <div class="p-2 rounded-lg bg-green-100 text-green-600 mr-2 md:mr-3">
-                                <i class="fas fa-file-excel"></i>
-                            </div>
-                            Google Sheets Integration - ACTIVE
-                        </h3>
-                        
-                        <div class="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                            <h4 class="font-bold text-blue-800 mb-2">✅ Deployment Status: Connected</h4>
-                            <div class="text-sm text-blue-700 space-y-1">
-                                <p><strong>Web App URL:</strong> <code class="text-xs break-all" id="webapp-url-display">Loading...</code></p>
-                                <p><strong>Auto-Sync:</strong> Every 5 minutes</p>
-                                <p><strong>Two-Way Sync:</strong> App ↔ Google Sheets</p>
-                                <p><strong>Spreadsheet:</strong> "Aikya Property Bookings" in your Google Drive</p>
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                            <button onclick="testSheetsConnection()" class="btn-primary w-full px-4 md:px-6 py-3 md:py-4 font-semibold rounded-lg md:rounded-xl shadow-lg flex items-center justify-center touch-target mobile-button">
-                                <i class="fas fa-plug mr-1 md:mr-2"></i> Test Connection
-                            </button>
-                            <button onclick="openGoogleSheets()" class="w-full px-4 md:px-6 py-3 md:py-4 bg-orange-500 text-white font-semibold rounded-lg md:rounded-xl shadow-lg hover:bg-orange-600 transition flex items-center justify-center touch-target mobile-button">
-                                <i class="fas fa-external-link-alt mr-1 md:mr-2"></i> Open Google Sheets
-                            </button>
-                        </div>
-                        
-                        <div id="sheet-status" class="mt-4 md:mt-6 p-3 md:p-4 rounded-lg md:rounded-xl flex items-start space-x-3 bg-green-100 text-green-700 border border-green-200">
-                            <i class="fas fa-check-circle mt-1 text-green-500"></i>
-                            <div class="flex-1">
-                                <p class="font-bold text-sm md:text-base">✅ Google Sheets Integration Active</p>
-                                <p class="text-xs md:text-sm mt-1">All bookings will be automatically synced to Google Sheets</p>
-                                <p class="text-xs text-green-600 mt-1">Use buttons above to manually sync or open sheets</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Search Section -->
-                    <div class="mb-6 md:mb-8 p-4 md:p-6 lg:p-8 rounded-xl md:rounded-2xl bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-100 shadow-sm">
-                        <h3 class="mobile-text-lg md:text-xl font-bold text-purple-700 mb-4 md:mb-6 flex items-center">
-                            <div class="p-2 rounded-lg bg-purple-100 text-purple-600 mr-2 md:mr-3">
-                                <i class="fas fa-search"></i>
-                            </div>
-                            Search Bookings
-                        </h3>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 items-end">
-                            <div class="md:col-span-2">
-                                <label for="searchBookingId" class="block text-sm font-medium text-gray-700 mb-2">Booking ID</label>
-                                <input type="text" id="searchBookingId" placeholder="Enter Booking ID" class="w-full p-3 md:p-4 form-input touch-target">
-                            </div>
-                            <div class="md:col-span-2">
-                                <label for="searchPhone" class="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
-                                <input type="text" id="searchPhone" placeholder="Enter phone number" class="w-full p-3 md:p-4 form-input touch-target">
-                            </div>
-                            <div class="md:col-span-2 lg:col-span-1 flex gap-2">
-                                <button onclick="handleSearch()" class="btn-primary flex-1 px-4 md:px-6 py-3 md:py-4 font-semibold rounded-lg md:rounded-xl shadow-lg flex items-center justify-center touch-target mobile-button">
-                                    <i class="fas fa-search mr-1 md:mr-2"></i> Search
-                                </button>
-                                <button onclick="clearSearch()" class="px-3 md:px-4 py-3 md:py-4 text-gray-600 bg-gray-200 rounded-lg md:rounded-xl hover:bg-gray-300 transition flex items-center touch-target">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <div id="search-results-info" class="mt-4 text-sm font-medium text-gray-600 hidden">
-                            <!-- Search results info will appear here -->
-                        </div>
-                    </div>
-
-                    <!-- Booking List -->
-                    <div>
-                        <h3 class="mobile-text-xl md:text-2xl font-bold text-gray-900 mb-4 md:mb-6 flex items-center section-header">
-                            <div class="p-2 rounded-lg bg-gray-100 text-gray-600 mr-2 md:mr-3">
-                                <i class="fas fa-receipt"></i>
-                            </div>
-                            Current Bookings
-                        </h3>
-                        <!-- FIXED: Improved table container for better scrolling -->
-                        <div class="table-container mobile-scrollable">
-                            <div id="booking-list-container">
-                                <!-- Bookings will be rendered here -->
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Properties Management Tab -->
-            <div id="tab-properties" class="tab-content hidden">
-                <div class="glass-card rounded-xl md:rounded-2xl p-4 md:p-6 lg:p-8">
-                    <h2 class="mobile-text-2xl md:text-3xl font-bold text-gray-900 mb-2 section-header">Properties Management</h2>
-
-                    <!-- Add New Property Form -->
-                    <div id="add-property-section" class="mb-8 md:mb-10 p-4 md:p-6 lg:p-8 rounded-xl md:rounded-2xl bg-gradient-to-br from-green-50 to-emerald-50 border border-green-100 shadow-sm">
-                        <h3 class="mobile-text-lg md:text-xl font-bold text-green-700 mb-4 md:mb-6 flex items-center">
-                            <div class="p-2 rounded-lg bg-green-100 text-green-600 mr-2 md:mr-3">
-                                <i class="fas fa-plus-circle"></i>
-                            </div>
-                            Add New Property (Admin Only)
-                        </h3>
-                        <form id="add-property-form" class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                            <div>
-                                <label for="propertyName" class="block text-sm font-medium text-gray-700 mb-2">Property Name</label>
-                                <input type="text" id="propertyName" required class="w-full p-3 md:p-4 form-input touch-target">
-                            </div>
-                            <div>
-                                <label for="propertyLocation" class="block text-sm font-medium text-gray-700 mb-2">Location</label>
-                                <input type="text" id="propertyLocation" required class="w-full p-3 md:p-4 form-input touch-target">
-                            </div>
-                            <div class="md:col-span-2">
-                                <button type="submit" class="btn-success w-full md:w-auto px-4 md:px-6 py-3 md:py-4 font-semibold rounded-lg md:rounded-xl shadow-lg flex items-center justify-center touch-target mobile-button">
-                                    <i class="fas fa-save mr-1 md:mr-2"></i> Save Property
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-
-                    <!-- Property List -->
-                    <div>
-                        <h3 class="mobile-text-xl md:text-2xl font-bold text-gray-900 mb-4 md:mb-6 flex items-center section-header">
-                            <div class="p-2 rounded-lg bg-gray-100 text-gray-600 mr-2 md:mr-3">
-                                <i class="fas fa-building"></i>
-                            </div>
-                            Current Properties
-                        </h3>
-                        <div id="property-list-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-                            <!-- Properties will be rendered here -->
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Admin Access Tab -->
-            <div id="tab-admin" class="tab-content hidden">
-                <div class="glass-card rounded-xl md:rounded-2xl p-4 md:p-6 lg:p-8">
-                    <h2 class="mobile-text-2xl md:text-3xl font-bold text-gray-900 mb-2 section-header">User Access & Role Management</h2>
-
-                    <!-- Admin Login -->
-                    <div id="login-container" class="max-w-md mx-auto p-4 md:p-6 lg:p-8 rounded-xl md:rounded-2xl glass-card border border-gray-200 shadow-lg transition duration-300 ease-in-out">
-                        <h3 class="mobile-text-lg md:text-xl font-bold text-gray-700 mb-4 md:mb-6 flex items-center">
-                            <div class="p-2 rounded-lg bg-indigo-100 text-indigo-600 mr-2 md:mr-3">
-                                <i class="fas fa-lock"></i>
-                            </div>
-                            Admin Login
-                        </h3>
-                        <form id="admin-login-form" class="space-y-4 md:space-y-6">
-                            <div>
-                                <label for="adminUsername" class="block text-sm font-medium text-gray-700 mb-2">Username</label>
-                                <input type="text" id="adminUsername" placeholder="Enter username" class="w-full p-3 md:p-4 form-input touch-target">
-                            </div>
-                            <div>
-                                <label for="adminPassword" class="block text-sm font-medium text-gray-700 mb-2">Password</label>
-                                <input type="password" id="adminPassword" placeholder="Enter password" class="w-full p-3 md:p-4 form-input touch-target">
-                            </div>
-                            <button type="submit" class="btn-primary w-full px-3 md:px-4 py-3 md:py-4 font-semibold rounded-lg md:rounded-xl shadow-lg flex items-center justify-center touch-target mobile-button">
-                                <i class="fas fa-sign-in-alt mr-1 md:mr-2"></i> Log In
-                            </button>
-                            <p id="login-message" class="text-center text-red-500 text-sm mt-2"></p>
-                        </form>
-                    </div>
-
-                    <!-- Admin Dashboard (Visible after login) -->
-                    <div id="admin-dashboard" class="hidden space-y-6 md:space-y-8">
-                        <div class="p-4 md:p-6 rounded-lg md:rounded-2xl bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200">
-                            <p id="role-welcome-message" class="text-base md:text-lg font-medium flex items-center"></p>
-                        </div>
-
-                        <!-- User Management -->
-                        <div class="p-4 md:p-6 lg:p-8 rounded-xl md:rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 shadow-sm">
-                            <h3 class="mobile-text-lg md:text-xl font-bold text-blue-700 mb-4 md:mb-6 flex items-center">
-                                <div class="p-2 rounded-lg bg-blue-100 text-blue-600 mr-2 md:mr-3">
-                                    <i class="fas fa-user-plus"></i>
-                                </div>
-                                Add New User
-                            </h3>
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 mb-4 md:mb-6">
-                                <input type="text" id="newUserUsername" placeholder="New Username" class="p-3 md:p-4 form-input touch-target">
-                                <input type="password" id="newUserPassword" placeholder="New Password" class="p-3 md:p-4 form-input touch-target">
-                                <select id="newUserRole" class="p-3 md:p-4 form-input bg-white touch-target">
-                                    <option value="Admin">Admin</option>
-                                    <option value="Staff">Staff Member</option>
-                                </select>
-                            </div>
-                            <button onclick="addNewUser()" class="btn-primary w-full md:w-auto px-4 md:px-6 py-3 md:py-4 font-semibold rounded-lg md:rounded-xl shadow-lg flex items-center justify-center touch-target mobile-button">
-                                <i class="fas fa-user-plus mr-1 md:mr-2"></i> Add New User
-                            </button>
-                        </div>
-
-                        <!-- User List -->
-                        <div class="p-4 md:p-6 lg:p-8 rounded-xl md:rounded-2xl bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-100 shadow-sm">
-                            <h3 class="mobile-text-lg md:text-xl font-bold text-purple-700 mb-4 md:mb-6 flex items-center">
-                                <div class="p-2 rounded-lg bg-purple-100 text-purple-600 mr-2 md:mr-3">
-                                    <i class="fas fa-users"></i>
-                                </div>
-                                User List
-                            </h3>
-                            <div id="user-list-container" class="space-y-3 md:space-y-4">
-                                <!-- Users will be listed here -->
-                            </div>
-                        </div>
-
-                        <button onclick="logoutAdmin()" class="px-4 md:px-5 py-2 md:py-3 text-sm text-red-600 hover:text-red-800 transition duration-150 ease-in-out flex items-center touch-target">
-                            <i class="fas fa-sign-out-alt mr-1 md:mr-2"></i> Log Out
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Global Message Box -->
-        <div id="message-box" class="fixed bottom-4 right-4 z-50 transition-transform duration-300 ease-out translate-y-full opacity-0 max-w-[calc(100vw-2rem)]">
-            <div class="glass-card p-3 md:p-4 rounded-lg md:rounded-xl shadow-2xl min-w-[200px] md:min-w-[300px] flex items-center space-x-2 md:space-x-3 border">
-                <i id="msg-icon" class="text-xl md:text-2xl"></i>
-                <span id="msg-text" class="font-medium text-sm md:text-base"></span>
-            </div>
-        </div>
-
-        <!-- Custom Confirmation Modal -->
-        <div id="custom-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 z-50 hidden flex items-center justify-center p-4 safe-area-top safe-area-bottom safe-area-left safe-area-right">
-            <div class="glass-card p-4 md:p-6 rounded-lg md:rounded-2xl shadow-2xl max-w-sm w-full mx-4 transform transition-all border">
-                <h3 id="modal-title" class="mobile-text-lg md:text-xl font-bold mb-3 md:mb-4 text-gray-900">Confirm Action</h3>
-                <p id="modal-body" class="text-gray-600 mb-4 md:mb-6">Are you sure you want to proceed?</p>
-                <div class="flex justify-end space-x-2 md:space-x-3">
-                    <button id="modal-cancel-btn" class="px-3 md:px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition touch-target">Cancel</button>
-                    <button id="modal-confirm-btn" class="btn-primary px-3 md:px-4 py-2 text-sm font-medium rounded-lg touch-target">Confirm</button>
-                </div>
+        <div class="space-y-4">
+            <button onclick="showForm('enquiry')" class="menu-item w-full text-left px-6 py-4 text-[#3E0703] hover:text-[#8C1007] font-medium">
+                New Enquiry
+            </button>
+            <button onclick="showForm('update')" class="menu-item w-full text-left px-6 py-4 text-[#3E0703] hover:text-[#8C1007] font-medium">
+                Update Status
+            </button>
+            <button onclick="showDashboard()" class="menu-item w-full text-left px-6 py-4 text-[#3E0703] hover:text-[#8C1007] font-medium">
+                Dashboard
+            </button>
+            <button onclick="openBookingPage()" class="menu-item w-full text-left px-6 py-4 text-[#3E0703] hover:text-[#8C1007] font-medium">
+                Booking Page
+            </button>
+            <div class="border-t border-gray-200 pt-4 mt-6">
+                <h3 class="text-sm font-semibold text-[#660B05] mb-3 px-6">Admin</h3>
+                <input type="password" id="adminPassword" placeholder="Enter password" class="w-full px-4 py-2 border border-gray-300 rounded-lg mb-3 input-focus">
+                <button onclick="resetSheet()" class="w-full px-4 py-2 bg-[#8C1007] text-white rounded-lg hover:bg-[#660B05] transition-colors">
+                    Reset Sheet
+                </button>
+                <div id="adminMessage" class="mt-3 text-center text-sm"></div>
             </div>
         </div>
     </div>
 
+    <!-- Enquiry Form Content -->
+    <div id="enquiryFormContainer" class="glass-effect p-10 rounded-2xl card-shadow max-w-4xl w-full">
+        <div class="flex flex-col items-center mb-8">
+            <!-- Logo from local file -->
+            <img src="icon (1).png" alt="Company Logo" class="w-40 h-40 rounded-full mb-4">
+            <h1 class="text-4xl font-bold text-[#3E0703] mb-2 text-center">Homestay Enquiry</h1>
+            <p class="text-[#660B05]">Professional booking management system</p>
+        </div>
+        <form id="enquiryForm" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <label for="enquiryId" class="block form-label">Enquiry ID</label>
+                <input type="text" id="enquiryId" name="Enquiry ID" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl input-focus bg-gray-50" readonly>
+            </div>
+            <div>
+                <label for="dateOfEnquiry" class="block form-label">Date of Enquiry</label>
+                <input type="text" id="dateOfEnquiry" name="Date of Enquiry" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl input-focus bg-gray-50" readonly>
+            </div>
+            <div>
+                <label for="guestName" class="block form-label">Guest Name *</label>
+                <input type="text" id="guestName" name="Guest Name" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl input-focus" required>
+            </div>
+            <div>
+                <label for="contact" class="block form-label">Contact (Phone/Email) *</label>
+                <input type="text" id="contact" name="Contact (Phone/Email)" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl input-focus" required>
+            </div>
+            <div>
+                <label for="propertyName" class="block form-label">Property Name *</label>
+                <select id="propertyName" name="Property Name" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl input-focus" required>
+                    <option value="" disabled selected>Select a property</option>
+                    <option value="1BHK - 401">1BHK - 401</option>
+                    <option value="1BHK - 402">1BHK - 402</option>
+                    <option value="2BHK - 101">2BHK - 101</option>
+                    <option value="2bHK - 102">2bHK - 102</option>
+                    <option value="2BHK - 201">2BHK - 201</option>
+                    <option value="2BHK - 202">2BHK - 202</option>
+                    <option value="2BHK - 302">2BHK - 302</option>
+                    <option value="2BHK - G1">2BHK - G1</option>
+                    <option value="3BHK - 101">3BHK - 101</option>
+                    <option value="1BHK - Villa">1BHK - Villa</option>
+                    <option value="2BHK - Villa">2BHK - Villa</option>
+                    <option value="2BHK - Palace">2BHK - Palace</option>
+                    <option value="2BHK - Falnir">2BHK - Falnir</option>
+                    <option value="3BHK - Nikunj">3BHK - Nikunj</option>
+                </select>
+            </div>
+            <div>
+                <label for="noOfGuests" class="block form-label">Number of Guests *</label>
+                <input type="number" id="noOfGuests" name="No. of Guests" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl input-focus" min="1" required>
+            </div>
+            <div>
+                <label for="checkInDate" class="block form-label">Check-in Date *</label>
+                <input type="date" id="checkInDate" name="Check-in Date" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl input-focus" required>
+            </div>
+            <div>
+                <label for="checkOutDate" class="block form-label">Check-out Date *</label>
+                <input type="date" id="checkOutDate" name="Check-out Date" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl input-focus" required>
+            </div>
+            <div>
+                <label for="bookingSource" class="block form-label">Booking Source *</label>
+                <select id="bookingSource" name="Booking Source" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl input-focus" required>
+                    <option value="" disabled selected>Select a source</option>
+                    <option value="Airbnb">Airbnb</option>
+                    <option value="Booking.com">Booking.com</option>
+                    <option value="Direct">Direct</option>
+                    <option value="Walk-in">Walk-in</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            <div>
+                <label for="enquiryStatus" class="block form-label">Enquiry Status *</label>
+                <select id="enquiryStatus" name="Enquiry Status" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl input-focus" required>
+                    <option value="" disabled selected>Select a status</option>
+                    <option value="New">New</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="Confirmed">Confirmed</option>
+                    <option value="Cancelled">Cancelled</option>
+                </select>
+            </div>
+            <div>
+                <label for="assignedTo" class="block form-label">Assigned To</label>
+                <input type="text" id="assignedTo" name="Assigned To" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl input-focus">
+            </div>
+            <div class="md:col-span-2">
+                <label for="remarks" class="block form-label">Remarks / Follow-up Notes</label>
+                <textarea id="remarks" name="Remarks / Follow-up Notes" rows="4" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl input-focus resize-none"></textarea>
+            </div>
+            <div class="md:col-span-2 flex justify-center mt-6">
+                <button type="button" onclick="submitForm('enquiry')" class="btn-primary px-8 py-4 text-white font-semibold rounded-xl text-lg shadow-lg">
+                    Submit Enquiry
+                </button>
+            </div>
+        </form>
+        <div id="enquiryMessage" class="mt-6 text-center text-sm font-medium"></div>
+    </div>
+
+    <!-- Update Form Content -->
+    <div id="updateFormContainer" class="hidden glass-effect p-10 rounded-2xl card-shadow max-w-2xl w-full">
+        <div class="flex flex-col items-center mb-8">
+            <!-- Logo from local file -->
+            <img src="icon (1).png" alt="Company Logo" class="w-24 h-24 rounded-full mb-4">
+            <h1 class="text-4xl font-bold text-[#3E0703] mb-2 text-center">Update Booking Status</h1>
+            <p class="text-[#660B05]">Modify enquiry status and add notes</p>
+        </div>
+        <form id="updateForm" class="grid grid-cols-1 gap-6">
+            <div>
+                <label for="updateEnquiryId" class="block form-label">Enquiry ID *</label>
+                <input type="text" id="updateEnquiryId" name="Enquiry ID" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl input-focus" required>
+            </div>
+            <div>
+                <label for="updateEnquiryStatus" class="block form-label">Enquiry Status *</label>
+                <select id="updateEnquiryStatus" name="Enquiry Status" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl input-focus" required>
+                    <option value="" disabled selected>Select a status</option>
+                    <option value="New">New</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="Confirmed">Confirmed</option>
+                    <option value="Cancelled">Cancelled</option>
+                </select>
+            </div>
+            <div>
+                <label for="updateRemarks" class="block form-label">Remarks / Follow-up Notes</label>
+                <textarea id="updateRemarks" name="Remarks / Follow-up Notes" rows="4" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl input-focus resize-none"></textarea>
+            </div>
+            <div class="flex justify-center mt-6">
+                <button type="button" onclick="submitForm('update')" class="btn-primary px-8 py-4 text-white font-semibold rounded-xl text-lg shadow-lg">
+                    Update Status
+                </button>
+            </div>
+        </form>
+        <div id="updateMessage" class="mt-6 text-center text-sm font-medium"></div>
+    </div>
+
+    <!-- Dashboard Content -->
+    <div id="dashboardContainer" class="hidden glass-effect p-10 rounded-2xl card-shadow max-w-6xl w-full">
+        <div class="flex flex-col items-center mb-8">
+            <!-- Logo from local file -->
+            <img src="icon (1).png" alt="Company Logo" class="w-24 h-24 rounded-full mb-4">
+            <h1 class="text-4xl font-bold text-[#3E0703] mb-2 text-center">Enquiry Dashboard</h1>
+            <p class="text-[#660B05]">Analytics and insights</p>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="bg-white p-8 rounded-2xl shadow-lg">
+                <h2 class="text-xl font-semibold text-[#3E0703] mb-6 text-center">Enquiries by Property</h2>
+                <canvas id="propertyChart"></canvas>
+            </div>
+            <div class="bg-white p-8 rounded-2xl shadow-lg">
+                <h2 class="text-xl font-semibold text-[#3E0703] mb-6 text-center">Enquiries by Source</h2>
+                <canvas id="sourceChart"></canvas>
+            </div>
+        </div>
+        <div id="dashboardMessage" class="mt-6 text-center text-sm font-medium"></div>
+    </div>
+
+    <!-- Booking Page Content -->
+    <div id="bookingPageContainer" class="hidden glass-effect p-8 rounded-2xl card-shadow w-full max-w-7xl min-h-[90vh] flex flex-col">
+        <div class="text-center mb-6">
+            <!-- Logo from local file -->
+            <img src="icon (1).png" alt="Company Logo" class="w-24 h-24 rounded-full mx-auto mb-4">
+            <h1 class="text-4xl font-bold text-[#3E0703] mb-2">Aikya Booking</h1>
+            <p class="text-[#660B05]">Complete your reservation</p>
+        </div>
+        <iframe id="bookingFrame" src="https://aikya-booking.vercel.app/" class="w-full flex-grow rounded-xl border-0 shadow-lg"></iframe>
+    </div>
+
     <script>
-        // --- SUPABASE CONFIGURATION ---
-        const SUPABASE_URL = 'https://fiqlikvsoqqlcbbtsmwl.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZpcWxpa3Zzb3FxbGNiYnRzbXdsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI0OTY5NTgsImV4cCI6MjA3ODA3Mjk1OH0.ESMTiXRhIYnsMJ34XYESHrTyt-U1YtIENXWCDCwWleM';
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyCK9cJh8iX8nH5seaFPJyvEbVCxcwqKH2w5BIkI6CCTGyi9PwiSCAtb0R9cHwcIRz8Qg/exec';
+        const enquiryMessageEl = document.getElementById('enquiryMessage');
+        const updateMessageEl = document.getElementById('updateMessage');
+        const adminMessageEl = document.getElementById('adminMessage');
+        const adminPasswordInput = document.getElementById('adminPassword');
+        const hamburgerMenu = document.getElementById('hamburgerMenu');
+        const overlay = document.getElementById('overlay');
+        const enquiryFormContainer = document.getElementById('enquiryFormContainer');
+        const updateFormContainer = document.getElementById('updateFormContainer');
+        const dashboardContainer = document.getElementById('dashboardContainer');
+        const bookingPageContainer = document.getElementById('bookingPageContainer');
+        const SECRET_PASSWORD = 'password123';
 
-        // Initialize Supabase client
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        let propertyChart, sourceChart;
 
-        // --- GOOGLE SHEETS CONFIGURATION ---
-        const SHEETS_WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbxAiylJHxzcQ9CgcwmBfCEd9N1uc7GQ4zvDIWFP3x8Zk8F6IZnwflav3cG3TRbc0r6V/exec';
-
-        // --- SECURE DEFAULT CREDENTIALS ---
-        const DEFAULT_ADMIN = {
-            username: 'aikyaadmin',
-            password: 'admin123',
-            role: 'Admin'
-        };
-
-        // --- DATA STORAGE ---
-        const STORAGE_KEY_PROPERTIES = 'property_manager_properties';
-        const STORAGE_KEY_BOOKINGS = 'property_manager_bookings';
-        const STORAGE_KEY_SHEET_CONFIG = 'property_manager_sheet_config';
-        const STORAGE_KEY_USER = 'aikya_admin_user';
-        const STORAGE_KEY_USERS = 'aikya_system_users';
-
-        let properties = [];
-        let bookings = [];
-        let sheetConfig = { is_configured: true, webapp_url: SHEETS_WEBAPP_URL };
-        let users = [];
-        let currentUserRole = null;
-        let currentSelectedPropertyId = '';
-        let currentCalendarDate = new Date();
-        currentCalendarDate.setDate(1);
-
-        // Calendar selection state
-        let selectedStartDate = null;
-        let selectedEndDate = null;
-
-        // Search state
-        let currentSearchTerm = '';
-        let currentSearchType = '';
-
-        // Check-in filter state
-        let currentCheckinFilterDate = null;
-
-        // --- CORE UTILITY FUNCTIONS ---
-        const dateToDMY = (date) => {
+        function formatDateToDDMMYYYY(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
             const day = String(date.getDate()).padStart(2, '0');
             const month = String(date.getMonth() + 1).padStart(2, '0');
             const year = date.getFullYear();
             return `${day}-${month}-${year}`;
-        };
-
-        const dmyToDate = (dmyString) => {
-            const [day, month, year] = dmyString.split('-').map(Number);
-            return new Date(year, month - 1, day);
-        };
-
-        const getCurrentKolkataDateTime = () => {
-            const now = new Date();
-            return now.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
-        };
-
-        const htmlDateToDMY = (htmlDate) => {
-            if (!htmlDate) return '';
-            const [year, month, day] = htmlDate.split('-');
-            return `${day}-${month}-${year}`;
-        };
-
-        const dmyToHtmlDate = (dmyString) => {
-            if (!dmyString) return '';
-            const [day, month, year] = dmyString.split('-');
-            return `${year}-${month}-${day}`;
-        };
-
-        const compareDMYDates = (date1, date2) => {
-            const d1 = dmyToDate(date1);
-            const d2 = dmyToDate(date2);
-            return d1.getTime() - d2.getTime();
-        };
-
-        function switchTab(tabId) {
-            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(content => content.classList.add('hidden'));
-
-            const tabButton = document.querySelector(`.tab-button[data-tab="${tabId}"]`);
-            if (tabButton) tabButton.classList.add('active');
-            
-            const tabContent = document.getElementById(`tab-${tabId}`);
-            if (tabContent) tabContent.classList.remove('hidden');
         }
 
-        // --- MODAL AND MESSAGE FUNCTIONS ---
-        let currentModalAction = null;
-
-        function showConfirmationModal(title, body, confirmCallback) {
-            document.getElementById('modal-title').textContent = title;
-            document.getElementById('modal-body').textContent = body;
-            currentModalAction = confirmCallback;
-            document.getElementById('custom-modal').classList.remove('hidden');
+        function formatDateToYYYYMMDD(dateString) {
+            if (!dateString) return '';
+            if (dateString.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                return dateString;
+            }
+            const parts = dateString.split('-');
+            if (parts.length === 3) {
+                return `${parts[2]}-${parts[1]}-${parts[0]}`;
+            }
+            return dateString;
         }
 
-        function hideConfirmationModal() {
-            document.getElementById('custom-modal').classList.add('hidden');
-            currentModalAction = null;
-        }
-
-        function showMessage(text, type = 'success') {
-            const box = document.getElementById('message-box');
-            const textElement = document.getElementById('msg-text');
-            const iconElement = document.getElementById('msg-icon');
-
-            let iconClass = '';
-            let bgColor = '';
-
-            switch (type) {
-                case 'success':
-                    iconClass = 'fas fa-check-circle text-green-400';
-                    bgColor = 'bg-green-700';
-                    break;
-                case 'error':
-                    iconClass = 'fas fa-exclamation-triangle text-red-400';
-                    bgColor = 'bg-red-700';
-                    break;
-                case 'info':
-                default:
-                    iconClass = 'fas fa-info-circle text-blue-400';
-                    bgColor = 'bg-blue-700';
-                    break;
-            }
-
-            box.className = 'fixed bottom-4 right-4 z-50 transition-transform duration-300 ease-out translate-y-full opacity-0 max-w-[calc(100vw-2rem)]';
-            box.querySelector('div').className = `text-white p-3 md:p-4 rounded-lg md:rounded-xl shadow-2xl min-w-[200px] md:min-w-[300px] flex items-center space-x-2 md:space-x-3 ${bgColor}`;
-
-            textElement.textContent = text;
-            iconElement.className = iconClass;
-
-            setTimeout(() => {
-                box.classList.remove('translate-y-full', 'opacity-0');
-                box.classList.add('translate-y-0', 'opacity-100');
-            }, 50);
-
-            setTimeout(() => {
-                box.classList.remove('translate-y-0', 'opacity-100');
-            }, 4000);
-            
-            setTimeout(() => {
-                box.classList.add('translate-y-full', 'opacity-0');
-            }, 3700);
-        }
-
-        // --- ENHANCED TWO-WAY SYNC FUNCTIONS ---
-
-        // Test connection using no-cors mode
-        async function testSheetsConnection() {
-            showMessage('Testing connection to Google Sheets...', 'info');
-            
-            try {
-                const url = `${SHEETS_WEBAPP_URL}?action=test_connection&_=${Date.now()}`;
-                const response = await fetch(url, { 
-                    mode: 'no-cors',
-                    method: 'GET'
-                });
-                
-                if (response.type === 'opaque') {
-                    showMessage('✅ Connected to Google Sheets! Ready for sync.', 'success');
-                    return true;
-                } else {
-                    showMessage('⚠️ Connection status unknown. Sync may still work.', 'warning');
-                    return true;
-                }
-            } catch (error) {
-                console.error('Connection test failed:', error);
-                showMessage('❌ Could not connect to Google Sheets: ' + error.message, 'error');
-                return false;
-            }
-        }
-
-        // Sync booking to Google Sheets
-        async function syncBookingToSheets(booking) {
-            try {
-                console.log('Syncing booking to sheets:', booking.id);
-                
-                const payload = {
-                    action: 'sync_booking',
-                    booking_id: booking.id,
-                    guest_name: booking.guest_name,
-                    phone_number: booking.phone_number || '',
-                    check_in_date: booking.check_in_date,
-                    check_out_date: booking.check_out_date,
-                    property_name: booking.property_name,
-                    property_id: booking.property_id,
-                    source: booking.source,
-                    amount_paid: booking.amount_paid,
-                    booked_at: booking.booked_at
-                };
-
-                // Use GET request with URL parameters for no-cors compatibility
-                const params = new URLSearchParams();
-                Object.keys(payload).forEach(key => {
-                    params.append(key, payload[key]);
-                });
-                
-                const url = `${SHEETS_WEBAPP_URL}?${params.toString()}`;
-                
-                const response = await fetch(url, {
-                    method: 'GET',
-                    mode: 'no-cors'
-                });
-
-                // With no-cors we can't read response, assume success if no error
-                if (response.type === 'opaque') {
-                    console.log('Booking sync request sent to sheets');
-                    
-                    // Update sync status in Supabase
-                    const { error } = await supabase
-                        .from('bookings')
-                        .update({ 
-                            sync_status: 'Synced',
-                            last_sync: new Date().toISOString()
-                        })
-                        .eq('id', booking.id);
-                    
-                    if (!error) {
-                        await loadData(); // Reload from Supabase
-                    }
-                    
-                    return { success: true, action: "created", message: "Booking synced to Google Sheets" };
-                } else {
-                    throw new Error('Failed to send sync request');
-                }
-            } catch (error) {
-                console.error('Sheets sync error:', error);
-                return { success: false, error: error.message };
-            }
-        }
-
-        // NEW: Enhanced pull function that updates Supabase with Google Sheets data
-        async function pullFromSheets() {
-            showMessage('🔄 Pulling updates from Google Sheets...', 'info');
-            
-            try {
-                // Since we can't directly read the response in no-cors mode,
-                // we'll implement a workaround using a service worker or proxy
-                // For now, we'll show a message about the limitation
-                
-                showMessage('⚠️ Direct pull not available in no-cors mode. Use manual sync.', 'warning');
-                
-                // Alternative: Manual data entry confirmation
-                setTimeout(() => {
-                    showMessage('💡 Tip: Edit bookings directly in the app for automatic sync to Sheets', 'info');
-                }, 2000);
-                
-            } catch (error) {
-                console.error('Pull from sheets error:', error);
-                showMessage('❌ Sync failed: ' + error.message, 'error');
-            }
-        }
-
-        // Manual sync all function
-        async function manualSyncAll() {
-            showMessage('Starting full sync process...', 'info');
-            
-            // Push any unsynced bookings to Sheets
-            const unsyncedBookings = bookings.filter(b => b.sync_status !== 'Synced');
-            
-            if (unsyncedBookings.length > 0) {
-                showMessage(`📤 Uploading ${unsyncedBookings.length} bookings to Sheets...`, 'info');
-                
-                let successCount = 0;
-                let errorCount = 0;
-
-                for (const booking of unsyncedBookings) {
-                    const result = await syncBookingToSheets(booking);
-                    if (result.success) {
-                        successCount++;
-                    } else {
-                        errorCount++;
-                    }
-                    await new Promise(resolve => setTimeout(resolve, 500)); // Delay between requests
-                }
-
-                if (successCount > 0) {
-                    showMessage(`✅ Successfully synced ${successCount} bookings to Google Sheets`, 'success');
-                }
-                if (errorCount > 0) {
-                    showMessage(`❌ Failed to sync ${errorCount} bookings`, 'error');
-                }
-                
-                await loadData();
-                renderBookings();
-            } else {
-                showMessage('✅ All bookings are already synced!', 'success');
-            }
-        }
-
-        // Open Google Sheets
-        function openGoogleSheets() {
-            window.open('https://docs.google.com/spreadsheets/u/0/', '_blank');
-            showMessage('Opening Google Sheets...', 'info');
-        }
-
-        // Debug function
-        async function debugSheets() {
-            try {
-                const connected = await testSheetsConnection();
-                console.log('Sheets connection test:', connected);
-                showMessage('Check browser console for debug info', 'info');
-            } catch (error) {
-                console.error('Debug error:', error);
-                showMessage('Debug failed: ' + error.message, 'error');
-            }
-        }
-
-        // Auto-sync every 5 minutes
-        function startAutoSync() {
-            // Initial sync after 10 seconds
-            setTimeout(() => {
-                manualSyncAll();
-            }, 10000);
-            
-            // Sync every 5 minutes
-            setInterval(() => {
-                manualSyncAll();
-            }, 5 * 60 * 1000);
-        }
-
-        // [Rest of your existing JavaScript code remains the same...]
-        // Only the sync functions above have been enhanced
-
-        // --- USER MANAGEMENT FUNCTIONS ---
-        async function loadUsers() {
-            try {
-                console.log("Loading users from Supabase...");
-                
-                const { data: usersData, error: usersError } = await supabase
-                    .from('users')
-                    .select('*');
-                
-                if (!usersError && usersData) {
-                    users = usersData;
-                    console.log("Users loaded from Supabase:", users);
-                } else {
-                    console.error("Error loading users from Supabase:", usersError);
-                    users = JSON.parse(localStorage.getItem(STORAGE_KEY_USERS) || '[]');
-                    
-                    if (users.length === 0) {
-                        const defaultAdmin = {
-                            id: 'USR-ADMIN-001',
-                            username: DEFAULT_ADMIN.username,
-                            password: DEFAULT_ADMIN.password,
-                            role: DEFAULT_ADMIN.role,
-                            created_at: new Date().toISOString(),
-                            is_active: true,
-                            is_default: true
-                        };
-                        users.push(defaultAdmin);
-                        await saveUsers();
-                    }
-                }
-            } catch (e) {
-                console.error("Supabase load failed, using localStorage", e);
-                users = JSON.parse(localStorage.getItem(STORAGE_KEY_USERS) || '[]');
-            }
-        }
-
-        async function saveUsers() {
-            try {
-                console.log("Saving users to Supabase...");
-                
-                if (users.length > 0) {
-                    const { error } = await supabase.from('users').upsert(users);
-                    if (error) console.error("Error saving users:", error);
-                }
-            } catch (e) {
-                console.error("Supabase save failed, using localStorage", e);
-            }
-
-            localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(users));
-        }
-
-        function authenticateUser(username, password) {
-            const user = users.find(u => 
-                u.username === username && 
-                u.password === password && 
-                u.is_active !== false
-            );
-            
-            if (user) {
-                return {
-                    id: user.id,
-                    username: user.username,
-                    role: user.role
-                };
-            }
-            return null;
-        }
-
-        window.addNewUser = async function() {
-            const username = document.getElementById('newUserUsername').value.trim();
-            const password = document.getElementById('newUserPassword').value;
-            const role = document.getElementById('newUserRole').value;
-
-            if (!username || !password) {
-                showMessage('Please enter both username and password.', 'error');
-                return;
-            }
-
-            if (users.find(u => u.username === username)) {
-                showMessage('Username already exists. Please choose a different username.', 'error');
-                return;
-            }
-
-            const newUser = {
-                id: 'USR-' + Math.random().toString(36).substring(2, 9).toUpperCase(),
-                username: username,
-                password: password,
-                role: role,
-                created_at: new Date().toISOString(),
-                created_by: currentUserRole,
-                is_active: true,
-                is_default: false
-            };
-
-            users.push(newUser);
-            await saveUsers();
-            renderUserList();
-            
-            document.getElementById('newUserUsername').value = '';
-            document.getElementById('newUserPassword').value = '';
-            
-            showMessage(`User "${username}" added successfully as ${role}!`, 'success');
-        }
-
-        window.deleteUser = async function(userId) {
-            if (currentUserRole !== 'Admin') {
-                showMessage('Access Denied: Only Admin can delete users.', 'error');
-                return;
-            }
-
-            const user = users.find(u => u.id === userId);
-            if (!user) return;
-
-            const currentUser = JSON.parse(localStorage.getItem(STORAGE_KEY_USER));
-            if (currentUser && currentUser.id === userId) {
-                showMessage('You cannot delete your own account.', 'error');
-                return;
-            }
-
-            if (user.is_default) {
-                showMessage('Cannot delete the default administrator account.', 'error');
-                return;
-            }
-
-            showConfirmationModal(
-                'Confirm User Deletion',
-                `Are you sure you want to delete user "${user.username}"? This action cannot be undone.`,
-                async () => {
-                    try {
-                        users = users.filter(u => u.id !== userId);
-                        await saveUsers();
-                        renderUserList();
-                        showMessage(`User "${user.username}" has been deleted.`, 'success');
-                    } catch (error) {
-                        console.error('Failed to delete user:', error);
-                        showMessage('Failed to delete user.', 'error');
-                    }
-                }
-            );
-        }
-
-        window.toggleUserStatus = async function(userId) {
-            if (currentUserRole !== 'Admin') {
-                showMessage('Access Denied: Only Admin can modify user status.', 'error');
-                return;
-            }
-
-            const user = users.find(u => u.id === userId);
-            if (!user) return;
-
-            const currentUser = JSON.parse(localStorage.getItem(STORAGE_KEY_USER));
-            if (currentUser && currentUser.id === userId) {
-                showMessage('You cannot deactivate your own account.', 'error');
-                return;
-            }
-
-            if (user.is_default) {
-                showMessage('Cannot deactivate the default administrator account.', 'error');
-                return;
-            }
-
-            user.is_active = !user.is_active;
-            await saveUsers();
-            renderUserList();
-            
-            const status = user.is_active ? 'activated' : 'deactivated';
-            showMessage(`User "${user.username}" has been ${status}.`, 'success');
-        }
-
-        function renderUserList() {
-            const container = document.getElementById('user-list-container');
-            
-            if (users.length === 0) {
-                container.innerHTML = '<p class="text-gray-500 p-4 text-center">No users found.</p>';
-                return;
-            }
-
-            const sortedUsers = [...users].sort((a, b) => {
-                if (a.role === 'Admin' && b.role !== 'Admin') return -1;
-                if (a.role !== 'Admin' && b.role === 'Admin') return 1;
-                return a.username.localeCompare(b.username);
-            });
-
-            container.innerHTML = sortedUsers.map(user => {
-                const roleClass = user.role === 'Admin' ? 'role-admin' : 'role-staff';
-                const statusClass = user.is_active ? 'text-green-600' : 'text-red-600';
-                const statusText = user.is_active ? 'Active' : 'Inactive';
-                const currentUser = JSON.parse(localStorage.getItem(STORAGE_KEY_USER));
-                const isCurrentUser = currentUser && currentUser.id === user.id;
-                const isDefaultUser = user.is_default;
-
-                return `
-                    <div class="user-card p-3 md:p-4 bg-white border border-gray-200 rounded-lg md:rounded-xl flex items-center justify-between">
-                        <div class="flex items-center space-x-3 md:space-x-4">
-                            <div class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm md:text-base">
-                                ${user.username.charAt(0).toUpperCase()}
-                            </div>
-                            <div>
-                                <div class="flex flex-col md:flex-row md:items-center space-y-1 md:space-y-0 md:space-x-2">
-                                    <p class="font-semibold text-gray-900 text-sm md:text-base">${user.username}</p>
-                                    <div class="flex items-center space-x-1 md:space-x-2">
-                                        <span class="role-badge ${roleClass}">${user.role}</span>
-                                        <span class="text-xs ${statusClass}">• ${statusText}</span>
-                                        ${isCurrentUser ? '<span class="text-xs bg-blue-100 text-blue-700 px-1 md:px-2 py-0.5 md:py-1 rounded text-xs">Current</span>' : ''}
-                                        ${isDefaultUser ? '<span class="text-xs bg-yellow-100 text-yellow-700 px-1 md:px-2 py-0.5 md:py-1 rounded text-xs">Default</span>' : ''}
-                                    </div>
-                                </div>
-                                <p class="text-xs md:text-sm text-gray-500">Created: ${new Date(user.created_at).toLocaleDateString()}</p>
-                                ${user.created_by ? `<p class="text-xs text-gray-400">By: ${user.created_by}</p>` : ''}
-                            </div>
-                        </div>
-                        <div class="flex space-x-1 md:space-x-2">
-                            <button onclick="toggleUserStatus('${user.id}')" 
-                                    class="px-2 md:px-3 py-1 text-xs md:text-sm rounded-lg ${user.is_active ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200' : 'bg-green-100 text-green-700 hover:bg-green-200'} transition touch-target"
-                                    ${isCurrentUser || isDefaultUser ? 'disabled opacity-50 cursor-not-allowed' : ''}>
-                                ${user.is_active ? 'Deactivate' : 'Activate'}
-                            </button>
-                            <button onclick="deleteUser('${user.id}')" 
-                                    class="px-2 md:px-3 py-1 text-xs md:text-sm bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition touch-target"
-                                    ${isCurrentUser || isDefaultUser ? 'disabled opacity-50 cursor-not-allowed' : ''}>
-                                Delete
-                            </button>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        // --- DATA FUNCTIONS ---
-        async function loadData() {
-            await loadUsers();
-            
-            try {
-                console.log("Loading data from Supabase...");
-                
-                const { data: propertiesData, error: propertiesError } = await supabase
-                    .from('properties')
-                    .select('*');
-                
-                if (!propertiesError && propertiesData) {
-                    properties = propertiesData;
-                    console.log("Properties loaded from Supabase:", properties);
-                } else {
-                    console.error("Error loading properties from Supabase:", propertiesError);
-                    properties = JSON.parse(localStorage.getItem(STORAGE_KEY_PROPERTIES) || '[]');
-                }
-
-                const { data: bookingsData, error: bookingsError } = await supabase
-                    .from('bookings')
-                    .select('*');
-                
-                if (!bookingsError && bookingsData) {
-                    bookings = bookingsData;
-                    console.log("Bookings loaded from Supabase:", bookings);
-                } else {
-                    console.error("Error loading bookings from Supabase:", bookingsError);
-                    bookings = JSON.parse(localStorage.getItem(STORAGE_KEY_BOOKINGS) || '[]');
-                }
-
-            } catch (e) {
-                console.error("Supabase load failed, using localStorage", e);
-                properties = JSON.parse(localStorage.getItem(STORAGE_KEY_PROPERTIES) || '[]');
-                bookings = JSON.parse(localStorage.getItem(STORAGE_KEY_BOOKINGS) || '[]');
-            }
-
-            if (properties.length === 0) {
-                properties = [
-                    { id: 'PROP-001', name: 'Beach Villa', location: 'Goa' },
-                    { id: 'PROP-002', name: 'Mountain View', location: 'Manali' },
-                    { id: 'PROP-003', name: 'City Apartment', location: 'Mumbai' }
-                ];
-                await saveData();
-            }
-        }
-
-        async function saveData() {
-            try {
-                console.log("Saving data to Supabase...");
-                
-                if (properties.length > 0) {
-                    const { error: propertiesError } = await supabase.from('properties').upsert(properties);
-                    if (propertiesError) console.error("Error saving properties:", propertiesError);
-                }
-                
-                if (bookings.length > 0) {
-                    const { error: bookingsError } = await supabase.from('bookings').upsert(bookings);
-                    if (bookingsError) console.error("Error saving bookings:", bookingsError);
-                }
-                
-            } catch (e) {
-                console.error("Supabase save failed, using localStorage", e);
-            }
-
-            localStorage.setItem(STORAGE_KEY_PROPERTIES, JSON.stringify(properties));
-            localStorage.setItem(STORAGE_KEY_BOOKINGS, JSON.stringify(bookings));
-            localStorage.setItem(STORAGE_KEY_SHEET_CONFIG, JSON.stringify(sheetConfig));
-        }
-
-        // --- AVAILABILITY CHECKING LOGIC ---
-        function isPropertyAvailable(propertyId, checkIn, checkOut) {
-            console.log(`Checking availability for property ${propertyId} from ${checkIn} to ${checkOut}`);
-            
-            const checkInDate = dmyToDate(checkIn);
-            const checkOutDate = dmyToDate(checkOut);
-            const checkInMs = checkInDate.getTime();
-            const checkOutMs = checkOutDate.getTime();
-
-            if (checkInMs >= checkOutMs) {
-                console.log("Invalid date range");
-                return false;
-            }
-
-            const propertyBookings = bookings.filter(booking => booking.property_id === propertyId);
-            console.log(`Found ${propertyBookings.length} bookings for this property`);
-
-            const isAvailable = !propertyBookings.some(booking => {
-                const existingStart = dmyToDate(booking.check_in_date);
-                const existingEnd = dmyToDate(booking.check_out_date);
-                const existingStartMs = existingStart.getTime();
-                const existingEndMs = existingEnd.getTime();
-
-                const hasOverlap = checkInMs < existingEndMs && checkOutMs > existingStartMs;
-                
-                if (hasOverlap) {
-                    console.log(`Conflict found with booking ${booking.id}: ${booking.check_in_date} to ${booking.check_out_date}`);
-                }
-                
-                return hasOverlap;
-            });
-
-            console.log(`Property ${propertyId} is ${isAvailable ? 'AVAILABLE' : 'NOT AVAILABLE'}`);
-            return isAvailable;
-        }
-
-        // --- CHECK-IN FUNCTIONS ---
-        function renderCheckins() {
-            const container = document.getElementById('checkin-list-container');
-            const filterInfo = document.getElementById('checkin-filter-info');
-            
-            const todayDMY = dateToDMY(new Date());
-            let filterDate = currentCheckinFilterDate || todayDMY;
-            
-            const checkins = bookings.filter(booking => 
-                booking.check_in_date === filterDate
-            );
-            
-            if (currentCheckinFilterDate) {
-                filterInfo.innerHTML = `
-                    <div class="flex items-center justify-between p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                        <span class="text-blue-700 font-medium text-sm">Showing check-ins for: <strong>${filterDate}</strong></span>
-                        <button onclick="resetCheckinFilter()" class="text-blue-800 hover:text-blue-900 text-xs underline touch-target">
-                            Show Today's Check-ins
-                        </button>
-                    </div>
-                `;
-            } else {
-                filterInfo.innerHTML = `
-                    <div class="flex items-center p-3 bg-green-50 border border-green-200 rounded-lg">
-                        <i class="fas fa-info-circle text-green-500 mr-2"></i>
-                        <span class="text-green-700 font-medium text-sm">Showing today's check-ins: <strong>${filterDate}</strong></span>
-                    </div>
-                `;
-            }
-            
-            const todayCheckins = bookings.filter(booking => 
-                booking.check_in_date === todayDMY
-            );
-            document.getElementById('today-checkin-count').textContent = todayCheckins.length;
-            
-            if (checkins.length === 0) {
-                container.innerHTML = `
-                    <div class="text-center p-6 md:p-8 border-2 border-dashed border-gray-300 rounded-lg md:rounded-xl">
-                        <i class="fas fa-calendar-times text-3xl md:text-4xl text-gray-400 mb-3 md:mb-4"></i>
-                        <p class="text-gray-500 font-medium">No check-ins found for ${filterDate}</p>
-                        <p class="text-gray-400 text-xs md:text-sm mt-2">Check-ins will appear here when guests are scheduled to arrive.</p>
-                    </div>
-                `;
-                return;
-            }
-            
-            const sortedCheckins = [...checkins].sort((a, b) => 
-                a.property_name.localeCompare(b.property_name)
-            );
-            
-            container.innerHTML = sortedCheckins.map(booking => {
-                const today = new Date();
-                const checkInDate = dmyToDate(booking.check_in_date);
-                const isToday = checkInDate.toDateString() === today.toDateString();
-                const isFuture = checkInDate > today;
-                
-                const cardClass = isToday ? 'checkin-today' : (isFuture ? 'checkin-future' : 'checkin-past');
-                
-                return `
-                    <div class="checkin-card p-4 md:p-5 bg-white border border-gray-200 ${cardClass}">
-                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4">
-                            <div class="flex-1">
-                                <div class="flex items-start justify-between mb-3">
-                                    <div>
-                                        <h4 class="text-base md:text-lg font-bold text-gray-900">${booking.guest_name}</h4>
-                                        <p class="text-xs md:text-sm text-gray-500">${booking.phone_number || 'No phone provided'}</p>
-                                    </div>
-                                    <span class="text-xs font-semibold px-2 md:px-3 py-1 rounded-full ${isToday ? 'bg-green-100 text-green-800' : (isFuture ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800')}">
-                                        ${isToday ? 'Today' : (isFuture ? 'Future' : 'Past')}
-                                    </span>
-                                </div>
-                                
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 text-xs md:text-sm">
-                                    <div>
-                                        <p class="text-gray-600"><i class="fas fa-building text-indigo-500 mr-1 md:mr-2"></i> ${booking.property_name}</p>
-                                        <p class="text-gray-600"><i class="fas fa-map-marker-alt text-indigo-500 mr-1 md:mr-2"></i> ${properties.find(p => p.id === booking.property_id)?.location || 'Unknown'}</p>
-                                    </div>
-                                    <div>
-                                        <p class="text-gray-600"><i class="fas fa-calendar-day text-indigo-500 mr-1 md:mr-2"></i> Check-in: ${booking.check_in_date}</p>
-                                        <p class="text-gray-600"><i class="fas fa-calendar-check text-indigo-500 mr-1 md:mr-2"></i> Check-out: ${booking.check_out_date}</p>
-                                    </div>
-                                </div>
-                                
-                                <div class="mt-3 flex flex-wrap gap-1 md:gap-2">
-                                    <span class="text-xs font-medium px-2 py-1 bg-blue-100 text-blue-700 rounded">${booking.source}</span>
-                                    <span class="text-xs font-medium px-2 py-1 bg-green-100 text-green-700 rounded">₹${booking.amount_paid}</span>
-                                    <span class="text-xs font-medium px-2 py-1 bg-purple-100 text-purple-700 rounded">${booking.id}</span>
-                                    <span class="text-xs font-medium px-2 py-1 ${booking.sync_status === 'Synced' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'} rounded">${booking.sync_status || 'Not Synced'}</span>
-                                </div>
-                            </div>
-                            
-                            <div class="flex flex-col gap-2 mt-3 md:mt-0">
-                                <button onclick="copyBookingId('${booking.id}')" class="px-3 md:px-4 py-2 text-xs md:text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition flex items-center justify-center touch-target">
-                                    <i class="fas fa-copy mr-1 md:mr-2"></i> Copy ID
-                                </button>
-                                <button onclick="quickCancelBooking('${booking.id}')" class="px-3 md:px-4 py-2 text-xs md:text-sm bg-red-500 text-white rounded-lg hover:bg-red-600 transition flex items-center justify-center touch-target">
-                                    <i class="fas fa-times mr-1 md:mr-2"></i> Cancel
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        window.filterCheckinsByDate = function() {
-            const dateInput = document.getElementById('checkin-filter-date').value;
-            if (!dateInput) {
-                showMessage('Please select a date to filter check-ins.', 'error');
-                return;
-            }
-            
-            currentCheckinFilterDate = htmlDateToDMY(dateInput);
-            renderCheckins();
-            showMessage(`Showing check-ins for ${currentCheckinFilterDate}`, 'info');
-        }
-
-        window.resetCheckinFilter = function() {
-            currentCheckinFilterDate = null;
-            document.getElementById('checkin-filter-date').value = '';
-            renderCheckins();
-            showMessage('Showing today\'s check-ins', 'info');
-        }
-
-        // --- CALENDAR FUNCTIONS ---
-        function renderAvailabilityCalendar() {
-            const year = currentCalendarDate.getFullYear();
-            const month = currentCalendarDate.getMonth();
-            const monthName = currentCalendarDate.toLocaleString('default', { month: 'long' });
-            
-            document.getElementById('current-month-year').textContent = `${monthName} ${year}`;
-            const grid = document.getElementById('calendar-grid');
-            grid.innerHTML = '';
-
-            const firstDayOfMonth = new Date(year, month, 1).getDay();
-            const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-            for (let i = 0; i < firstDayOfMonth; i++) {
-                grid.innerHTML += `<div class="p-1 md:p-2"></div>`;
-            }
-
-            for (let day = 1; day <= daysInMonth; day++) {
-                const date = new Date(year, month, day);
-                const dateYMD = dateToDMY(date);
-                
-                const isPast = date < new Date() && date.getDate() !== new Date().getDate();
-                
-                let statusClass = 'past-day';
-                let statusText = 'Past';
-                let isClickable = false;
-                
-                if (!isPast) {
-                    const availabilityStatus = getGlobalAvailabilityStatus(dateYMD);
-                    statusClass = availabilityStatus;
-                    statusText = availabilityStatus.split('-')[0];
-                    isClickable = true;
-                }
-
-                const isSelected = selectedStartDate === dateYMD || selectedEndDate === dateYMD;
-                if (isSelected) {
-                    statusClass += ' selected-date';
-                    statusText = 'Selected';
-                }
-
-                grid.innerHTML += `
-                    <div class="calendar-cell mobile-calendar-cell ${statusClass} ${isClickable ? 'cursor-pointer hover:opacity-80' : 'cursor-default'}" 
-                         data-date="${dateYMD}" 
-                         data-clickable="${isClickable}"
-                         onclick="${isClickable ? `handleCalendarDateClick('${dateYMD}')` : ''}"
-                         title="${statusText} on ${dateYMD}">
-                        <span class="text-base md:text-xl">${day}</span>
-                        <span class="text-xs font-semibold uppercase mt-1 hidden md:block">${statusText}</span>
-                    </div>
-                `;
-            }
-
-            updateSelectedDatesDisplay();
-        }
-
-        function getGlobalAvailabilityStatus(dateYMD) {
-            if (properties.length === 0) return 'none-available';
-            let availableCount = 0;
-            const tomorrow = dmyToDate(dateYMD);
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            const tomorrowYMD = dateToDMY(tomorrow);
-
-            for (const prop of properties) {
-                if (isPropertyAvailable(prop.id, dateYMD, tomorrowYMD)) {
-                    availableCount++;
-                }
-            }
-
-            if (availableCount === properties.length) return 'all-available';
-            if (availableCount > 0) return 'partial-available';
-            return 'none-available';
-        }
-
-        window.handleCalendarDateClick = function(dateYMD) {
-            if (!selectedStartDate) {
-                selectedStartDate = dateYMD;
-                selectedEndDate = null;
-            } else if (!selectedEndDate && compareDMYDates(dateYMD, selectedStartDate) > 0) {
-                selectedEndDate = dateYMD;
-            } else {
-                selectedStartDate = dateYMD;
-                selectedEndDate = null;
-            }
-            
-            renderAvailabilityCalendar();
-            updateSelectedDatesDisplay();
-        }
-
-        function updateSelectedDatesDisplay() {
-            document.getElementById('calendarCheckIn').value = selectedStartDate || 'Not selected';
-            document.getElementById('calendarCheckOut').value = selectedEndDate || 'Not selected';
-        }
-
-        window.clearCalendarSelection = function() {
-            selectedStartDate = null;
-            selectedEndDate = null;
-            renderAvailabilityCalendar();
-            updateSelectedDatesDisplay();
-            showMessage('Calendar selection cleared', 'info');
-        }
-
-        window.useCalendarDatesForBooking = function() {
-            if (!selectedStartDate) {
-                showMessage('Please select a check-in date from the calendar', 'error');
-                return;
-            }
-            if (!selectedEndDate) {
-                showMessage('Please select a check-out date from the calendar', 'error');
-                return;
-            }
-
-            document.getElementById('checkInDate').value = dmyToHtmlDate(selectedStartDate);
-            document.getElementById('checkOutDate').value = dmyToHtmlDate(selectedEndDate);
-            switchTab('booking');
-            refreshPropertySelection();
-            showMessage('Dates applied to booking form!', 'success');
-        }
-
-        window.changeMonth = function(delta) {
-            const newMonth = currentCalendarDate.getMonth() + delta;
-            currentCalendarDate = new Date(currentCalendarDate.getFullYear(), newMonth, 1);
-            renderAvailabilityCalendar();
-        }
-
-        // --- BOOKING FUNCTIONS ---
-        window.selectProperty = function(propertyId, propertyName) {
-            currentSelectedPropertyId = propertyId;
-            document.getElementById('selectedPropertyId').value = propertyId;
-            document.getElementById('book-button').disabled = false;
-            
-            const cards = document.querySelectorAll('#property-grid-container .property-card');
-            cards.forEach(card => {
-                card.classList.remove('selected');
-            });
-
-            const selectedCard = document.getElementById(`card-${propertyId}`);
-            if (selectedCard) {
-                selectedCard.classList.add('selected');
-            }
-            document.getElementById('property-status').textContent = `Selected Property: ${propertyName}`;
-        }
-
-        function refreshPropertySelection() {
-            const checkInHtml = document.getElementById('checkInDate').value;
-            const checkOutHtml = document.getElementById('checkOutDate').value;
-            const checkIn = htmlDateToDMY(checkInHtml);
-            const checkOut = htmlDateToDMY(checkOutHtml);
-            
-            if (checkIn && checkOut) {
-                const container = document.getElementById('property-grid-container');
-                container.innerHTML = '<div class="col-span-3 p-4 text-center">Loading properties...</div>';
-                
-                setTimeout(() => {
-                    renderPropertyGrid(checkIn, checkOut);
-                }, 500);
-            }
-        }
-
-        function renderPropertyGrid(checkIn, checkOut) {
-            const container = document.getElementById('property-grid-container');
-            const status = document.getElementById('property-status');
-            container.innerHTML = '';
-            
-            const todayDMY = dateToDMY(new Date());
-
-            if (!checkIn || !checkOut || compareDMYDates(checkIn, todayDMY) < 0 || compareDMYDates(checkOut, checkIn) <= 0) {
-                container.innerHTML = '<p class="text-red-500 p-3 bg-red-100 rounded-lg">Please select valid dates (check-in today or later, check-out after check-in).</p>';
-                document.getElementById('book-button').disabled = true;
-                return;
-            }
-
-            const availableProps = properties.filter(prop => isPropertyAvailable(prop.id, checkIn, checkOut));
-
-            if (availableProps.length === 0) {
-                container.innerHTML = '<p class="text-gray-500 p-4 border border-dashed rounded-lg text-center">No properties available for the selected dates.</p>';
-                document.getElementById('book-button').disabled = true;
-                return;
-            }
-
-            const gridHTML = availableProps.map(prop => {
-                const isSelected = prop.id === currentSelectedPropertyId;
-                const cardClass = isSelected ? 'selected' : '';
-                return `
-                    <div id="card-${prop.id}" class="property-card p-3 md:p-4 rounded-lg md:rounded-xl cursor-pointer select-none border-2 border-gray-200 bg-white ${cardClass}" onclick="selectProperty('${prop.id}', '${prop.name}')">
-                        <p class="text-base md:text-lg font-bold text-gray-800">${prop.name}</p>
-                        <p class="text-xs md:text-sm text-gray-500"><i class="fas fa-map-marker-alt text-indigo-400 mr-1"></i> ${prop.location}</p>
-                        <p class="text-xs mt-1 text-green-600 font-medium">Available!</p>
-                    </div>
-                `;
-            }).join('');
-            
-            container.innerHTML = gridHTML;
-            document.getElementById('property-status').textContent = 'Please select a property from the available options.';
-        }
-
-        // Event Listeners
-        document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('modal-cancel-btn').onclick = hideConfirmationModal;
-            document.getElementById('modal-confirm-btn').onclick = () => {
-                if (currentModalAction) currentModalAction();
-                hideConfirmationModal();
-            };
-
-            document.getElementById('nav-tabs').addEventListener('click', function(e) {
-                if (e.target.classList.contains('tab-button')) {
-                    const tabId = e.target.dataset.tab;
-                    switchTab(tabId);
-                }
-            });
-
-            document.getElementById('checkInDate').addEventListener('change', refreshPropertySelection);
-            document.getElementById('checkOutDate').addEventListener('change', refreshPropertySelection);
-
-            document.getElementById('booking-form').addEventListener('submit', async function(e) {
-                e.preventDefault();
-                const checkInHtml = document.getElementById('checkInDate').value;
-                const checkOutHtml = document.getElementById('checkOutDate').value;
-                const checkIn = htmlDateToDMY(checkInHtml);
-                const checkOut = htmlDateToDMY(checkOutHtml);
-                const propertyId = document.getElementById('selectedPropertyId').value;
-                
-                if (!propertyId) {
-                    showMessage('Please select a property.', 'error');
-                    return;
-                }
-
-                if (!isPropertyAvailable(propertyId, checkIn, checkOut)) {
-                    showMessage('Sorry, this property is no longer available for the selected dates.', 'error');
-                    refreshPropertySelection();
-                    return;
-                }
-
-                const selectedProperty = properties.find(p => p.id === propertyId);
-                if (!selectedProperty) return;
-
-                const booking = {
-                    id: 'BKG-' + Math.random().toString(36).substring(2, 9).toUpperCase(),
-                    guest_name: document.getElementById('guestName').value,
-                    phone_number: document.getElementById('phoneNumber').value,
-                    check_in_date: checkIn,
-                    check_out_date: checkOut,
-                    property_id: propertyId,
-                    property_name: selectedProperty.name,
-                    source: document.getElementById('source').value,
-                    amount_paid: parseFloat(document.getElementById('amountPaid').value).toFixed(2),
-                    booked_at: getCurrentKolkataDateTime(),
-                    sync_status: 'Not Synced'
-                };
-
-                bookings.push(booking);
-                await saveData();
-                
-                setTimeout(async () => {
-                    const syncResult = await syncBookingToSheets(booking);
-                    if (syncResult.success) {
-                        showMessage(`✅ Booking created and synced to Google Sheets! ID: ${booking.id}`, 'success');
-                    } else {
-                        showMessage(`⚠️ Booking created but sync failed: ${syncResult.error}`, 'warning');
-                    }
-                    renderBookings();
-                }, 1000);
-
-                renderBookings();
-                renderCheckins();
-                renderAvailabilityCalendar();
-                refreshPropertySelection();
-                currentSelectedPropertyId = '';
-                this.reset();
-                
-                document.getElementById('booking-count').textContent = bookings.length;
-            });
-
-            document.getElementById('add-property-form').addEventListener('submit', async function(e) {
-                e.preventDefault();
-                if (currentUserRole !== 'Admin') {
-                    showMessage('Access Denied: Admin only.', 'error');
-                    return;
-                }
-
-                const newProperty = {
-                    id: 'PROP-' + Math.random().toString(36).substring(2, 9).toUpperCase(),
-                    name: document.getElementById('propertyName').value,
-                    location: document.getElementById('propertyLocation').value
-                };
-
-                properties.push(newProperty);
-                await saveData();
-                renderProperties();
-                renderAvailabilityCalendar();
-                this.reset();
-                showMessage(`Property '${newProperty.name}' added successfully!`, 'success');
-            });
-
-            document.getElementById('admin-login-form').addEventListener('submit', async function(e) {
-                e.preventDefault();
-                const username = document.getElementById('adminUsername').value;
-                const password = document.getElementById('adminPassword').value;
-                const msg = document.getElementById('login-message');
-
-                await loadUsers();
-                
-                const authenticatedUser = authenticateUser(username, password);
-                if (authenticatedUser) {
-                    currentUserRole = authenticatedUser.role;
-                    msg.textContent = '';
-                    localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(authenticatedUser));
-                    updateAdminUI();
-                    showMessage(`Login successful! Welcome ${authenticatedUser.role} ${authenticatedUser.username}.`, 'success');
-                } else {
-                    currentUserRole = null;
-                    msg.textContent = 'Invalid username or password.';
-                    showMessage('Login failed: Invalid credentials.', 'error');
-                }
-            });
-
-            document.getElementById('searchBookingId').addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    handleSearch();
-                }
-            });
-
-            document.getElementById('searchPhone').addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    handleSearch();
-                }
-            });
-
-            initializeApp();
+        document.addEventListener('DOMContentLoaded', () => {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('checkInDate').setAttribute('min', today);
+            document.getElementById('checkOutDate').setAttribute('min', today);
         });
 
-        async function initializeApp() {
-            await loadData();
-            const todayDMY = dateToDMY(new Date());
-            const todayHtml = dmyToHtmlDate(todayDMY);
-            
-            document.getElementById('checkInDate').min = todayHtml;
-            document.getElementById('checkOutDate').min = todayHtml;
-            document.getElementById('availCheckIn').min = todayHtml;
-            document.getElementById('availCheckOut').min = todayHtml;
-            document.getElementById('checkin-filter-date').value = todayHtml;
-
-            document.getElementById('webapp-url-display').textContent = SHEETS_WEBAPP_URL;
-
-            const savedUser = localStorage.getItem(STORAGE_KEY_USER);
-            if (savedUser) {
-                const userData = JSON.parse(savedUser);
-                currentUserRole = userData.role;
+        document.getElementById('checkInDate').addEventListener('change', function() {
+            const checkInDate = this.value;
+            const checkOutInput = document.getElementById('checkOutDate');
+            if (checkInDate) {
+                checkOutInput.setAttribute('min', checkInDate);
+                if (checkOutInput.value && checkOutInput.value < checkInDate) {
+                    checkOutInput.value = '';
+                }
             }
+        });
 
-            renderProperties();
-            renderBookings();
-            renderCheckins();
-            renderAvailabilityCalendar();
-            updateAdminUI();
-            switchTab('checkins');
-            
-            startAutoSync();
-            
-            document.getElementById('property-count').textContent = properties.length;
-            document.getElementById('booking-count').textContent = bookings.length;
+        function openMenu() {
+            hamburgerMenu.classList.add('open');
+            overlay.classList.add('open');
+            document.querySelector('.menu').classList.add('open');
         }
 
-        // FIXED: Improved booking deletion function
-        async function handleCancellation() {
-            const bookingId = document.getElementById('bookingIdCancel').value.trim().toUpperCase();
-            if (!bookingId) {
-                showMessage('Please enter a Booking ID.', 'error');
+        function closeMenu() {
+            hamburgerMenu.classList.remove('open');
+            overlay.classList.remove('open');
+            document.querySelector('.menu').classList.remove('open');
+            adminPasswordInput.value = '';
+            adminMessageEl.textContent = '';
+        }
+
+        function showForm(formType) {
+            closeMenu();
+            enquiryFormContainer.classList.add('hidden');
+            updateFormContainer.classList.add('hidden');
+            dashboardContainer.classList.add('hidden');
+            bookingPageContainer.classList.add('hidden');
+
+            if (formType === 'enquiry') {
+                enquiryFormContainer.classList.remove('hidden');
+                generateEnquiryIDAndDate();
+            } else if (formType === 'update') {
+                updateFormContainer.classList.remove('hidden');
+                updateMessageEl.textContent = '';
+                document.getElementById('updateEnquiryId').value = '';
+                document.getElementById('updateEnquiryStatus').value = '';
+                document.getElementById('updateRemarks').value = '';
+            }
+        }
+
+        function openBookingPage() {
+            closeMenu();
+            enquiryFormContainer.classList.add('hidden');
+            updateFormContainer.classList.add('hidden');
+            dashboardContainer.classList.add('hidden');
+            bookingPageContainer.classList.remove('hidden');
+        }
+
+        async function showDashboard() {
+            closeMenu();
+            enquiryFormContainer.classList.add('hidden');
+            updateFormContainer.classList.add('hidden');
+            bookingPageContainer.classList.add('hidden');
+            dashboardContainer.classList.remove('hidden');
+            
+            const dashboardMessageEl = document.getElementById('dashboardMessage');
+            dashboardMessageEl.textContent = 'Fetching dashboard data...';
+            dashboardMessageEl.className = 'mt-6 text-center text-sm font-medium text-gray-500';
+
+            try {
+                const response = await fetch(`${WEB_APP_URL}?action=getDashboardData`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    const dashboardData = result.data;
+                    renderCharts(dashboardData);
+                    dashboardMessageEl.textContent = '';
+                } else {
+                    dashboardMessageEl.textContent = 'Error fetching data: ' + result.message;
+                    dashboardMessageEl.className = 'mt-6 text-center text-sm font-medium text-red-600';
+                }
+            } catch (error) {
+                dashboardMessageEl.textContent = 'Network error or invalid data: Could not fetch dashboard data.';
+                dashboardMessageEl.className = 'mt-6 text-center text-sm font-medium text-red-600';
+                console.error('Error fetching dashboard data:', error);
+            }
+        }
+
+        function generateEnquiryIDAndDate() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const random = Math.floor(Math.random() * 90000) + 10000;
+
+            const enquiryId = `ENQ-${year}${month}${day}-${random}`;
+            document.getElementById('enquiryId').value = enquiryId;
+            document.getElementById('dateOfEnquiry').value = formatDateToDDMMYYYY(now.toISOString().split('T')[0]);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            showForm('enquiry');
+        });
+
+        async function submitForm(formType) {
+            let form, messageEl;
+            let data = {};
+
+            if (formType === 'enquiry') {
+                form = document.getElementById('enquiryForm');
+                messageEl = enquiryMessageEl;
+                
+                const checkInDate = document.getElementById('checkInDate').value;
+                const checkOutDate = document.getElementById('checkOutDate').value;
+                
+                if (checkInDate && checkOutDate && checkOutDate <= checkInDate) {
+                    messageEl.textContent = 'Check-out date must be after check-in date';
+                    messageEl.className = 'mt-6 text-center text-sm font-medium text-red-600';
+                    return;
+                }
+                
+                const formData = new FormData(form);
+                formData.forEach((value, key) => data[key] = value);
+                data.action = 'addEnquiry';
+            } else if (formType === 'update') {
+                form = document.getElementById('updateForm');
+                messageEl = updateMessageEl;
+                const formData = new FormData(form);
+                formData.forEach((value, key) => data[key] = value);
+                data.action = 'updateStatus';
+            }
+
+            messageEl.textContent = 'Submitting...';
+            messageEl.className = 'mt-6 text-center text-sm font-medium text-gray-500';
+
+            try {
+                const response = await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    cache: 'no-cache',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                messageEl.textContent = 'Data submitted successfully!';
+                messageEl.className = 'mt-6 text-center text-sm font-medium text-green-600';
+
+                if (formType === 'enquiry') {
+                    form.reset();
+                    generateEnquiryIDAndDate();
+                } else if (formType === 'update') {
+                    form.reset();
+                }
+
+            } catch (error) {
+                messageEl.textContent = 'Error submitting data. Please check the browser console.';
+                messageEl.className = 'mt-6 text-center text-sm font-medium text-red-600';
+                console.error('Error:', error);
+            }
+        }
+
+        async function resetSheet() {
+            if (adminPasswordInput.value !== SECRET_PASSWORD) {
+                adminMessageEl.textContent = 'Incorrect password.';
+                adminMessageEl.className = 'mt-4 text-center text-sm font-medium text-red-600';
+                adminPasswordInput.value = '';
                 return;
             }
 
-            const index = bookings.findIndex(b => b.id === bookingId);
-            if (index === -1) {
-                showMessage(`Booking ID "${bookingId}" not found.`, 'error');
-                return;
+            adminMessageEl.textContent = 'Resetting sheet...';
+            adminMessageEl.className = 'mt-4 text-center text-sm font-medium text-gray-500';
+            
+            try {
+                const response = await fetch(`${WEB_APP_URL}?action=reset`, {
+                    method: 'GET',
+                    mode: 'no-cors',
+                    cache: 'no-cache',
+                });
+                
+                adminMessageEl.textContent = 'Sheet reset successfully!';
+                adminMessageEl.className = 'mt-4 text-center text-sm font-medium text-green-600';
+                closeMenu();
+            } catch (error) {
+                adminMessageEl.textContent = 'Error resetting sheet. Please check the browser console.';
+                adminMessageEl.className = 'mt-4 text-center text-sm font-medium text-red-600';
+                console.error('Error:', error);
             }
+        }
 
-            const booking = bookings[index];
-            showConfirmationModal(
-                'Confirm Cancellation', 
-                `Are you sure you want to cancel booking ${bookingId} for ${booking.guest_name}?`,
-                async () => {
-                    try {
-                        showMessage('Cancelling booking...', 'info');
-                        
-                        const { error } = await supabase
-                            .from('bookings')
-                            .delete()
-                            .eq('id', bookingId);
-                        
-                        if (error) {
-                            throw new Error(`Database error: ${error.message}`);
+        function renderCharts(dashboardData) {
+            if (propertyChart) propertyChart.destroy();
+            if (sourceChart) sourceChart.destroy();
+
+            const propertyLabels = Object.keys(dashboardData.property);
+            const propertyData = Object.values(dashboardData.property);
+            const sourceLabels = Object.keys(dashboardData.source);
+            const sourceData = Object.values(dashboardData.source);
+
+            const propertyCtx = document.getElementById('propertyChart').getContext('2d');
+            propertyChart = new Chart(propertyCtx, {
+                type: 'bar',
+                data: {
+                    labels: propertyLabels,
+                    datasets: [{
+                        label: 'Enquiry Count',
+                        data: propertyData,
+                        backgroundColor: 'rgba(140, 16, 7, 0.8)',
+                        borderColor: 'rgba(140, 16, 7, 1)',
+                        borderWidth: 2,
+                        borderRadius: 8,
+                        borderSkipped: false,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
                         }
-                        
-                        bookings.splice(index, 1);
-                        localStorage.setItem(STORAGE_KEY_BOOKINGS, JSON.stringify(bookings));
-                        
-                        renderBookings();
-                        renderCheckins();
-                        refreshPropertySelection();
-                        renderAvailabilityCalendar();
-                        document.getElementById('bookingIdCancel').value = '';
-                        
-                        document.getElementById('booking-count').textContent = bookings.length;
-                        
-                        showMessage(`Booking ${bookingId} has been cancelled successfully.`, 'success');
-                        
-                    } catch (error) {
-                        console.error('Failed to cancel booking:', error);
-                        showMessage(`Failed to cancel booking: ${error.message}`, 'error');
-                        
-                        await loadData();
-                        renderBookings();
-                        renderCheckins();
-                        renderAvailabilityCalendar();
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
                     }
                 }
-            );
-        }
-
-        // FIXED: Improved booking list rendering with better scrolling
-        function renderBookings(bookingsToRender = null, isSearch = false) {
-            const container = document.getElementById('booking-list-container');
-            let bookingsData = bookingsToRender || bookings;
-            
-            const sortedBookings = [...bookingsData].sort((a, b) => compareDMYDates(a.check_in_date, b.check_in_date));
-
-            if (sortedBookings.length === 0) {
-                const message = isSearch ? 
-                    'No bookings match your search criteria.' : 
-                    'No bookings found.';
-                container.innerHTML = `<p class="text-gray-500 p-4 border border-dashed rounded-lg text-center">${message}</p>`;
-                return;
-            }
-
-            // FIXED: Improved table structure for better scrolling
-            const tableHTML = `
-                <table class="min-w-full divide-y divide-gray-200 mobile-table">
-                    <thead class="bg-indigo-600">
-                        <tr>
-                            <th class="px-3 md:px-4 py-2 md:py-3 text-left text-xs font-medium text-white uppercase tracking-wider">ID / Sync</th>
-                            <th class="px-3 md:px-4 py-2 md:py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Guest / Phone</th>
-                            <th class="px-3 md:px-4 py-2 md:py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Property</th>
-                            <th class="px-3 md:px-4 py-2 md:py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Dates</th>
-                            <th class="px-3 md:px-4 py-2 md:py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Source / Amount</th>
-                            <th class="px-3 md:px-4 py-2 md:py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        ${sortedBookings.map(b => {
-                            let syncClass = b.sync_status === 'Synced' ? 'bg-green-100 text-green-700' : 
-                                          b.sync_status === 'Pending' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700';
-                            
-                            return `
-                                <tr class="${isSearch ? 'bg-blue-50' : 'hover:bg-gray-50'} transition-colors">
-                                    <td class="px-3 md:px-4 py-2 md:py-4 whitespace-nowrap">
-                                        <div class="text-sm font-bold text-indigo-600 ${isSearch ? 'font-extrabold' : ''}">${b.id}</div>
-                                        <span class="text-xs font-medium px-2 py-0.5 rounded-full ${syncClass}">${b.sync_status || 'Not Synced'}</span>
-                                    </td>
-                                    <td class="px-3 md:px-4 py-2 md:py-4 whitespace-nowrap">
-                                        <div class="text-sm text-gray-900 ${isSearch ? 'font-semibold' : ''}">${b.guest_name}</div>
-                                        <div class="text-xs text-gray-500">${b.phone_number || 'N/A'}</div>
-                                    </td>
-                                    <td class="px-3 md:px-4 py-2 md:py-4 whitespace-nowrap text-sm text-gray-900 ${isSearch ? 'font-semibold' : ''}">${b.property_name}</td>
-                                    <td class="px-3 md:px-4 py-2 md:py-4 whitespace-nowrap">
-                                        <div class="text-sm text-gray-900 ${isSearch ? 'font-semibold' : ''}">
-                                            <div>${b.check_in_date}</div>
-                                            <div class="text-xs text-gray-500 flex items-center">
-                                                <i class="fas fa-arrow-right text-xs mx-1"></i> ${b.check_out_date}
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="px-3 md:px-4 py-2 md:py-4 whitespace-nowrap">
-                                        <span class="text-xs font-medium text-indigo-500 ${isSearch ? 'font-semibold' : ''}">${b.source}</span>
-                                        <div class="text-sm font-bold text-green-600">₹${b.amount_paid}</div>
-                                    </td>
-                                    <td class="px-3 md:px-4 py-2 md:py-4 whitespace-nowrap text-sm">
-                                        <div class="flex space-x-1 md:space-x-2">
-                                            <button onclick="quickCancelBooking('${b.id}')" class="text-red-500 hover:text-red-700 p-1 md:p-2 rounded transition quick-action-btn touch-target" title="Cancel Booking">
-                                                <i class="fas fa-times-circle"></i>
-                                            </button>
-                                            <button onclick="copyBookingId('${b.id}')" class="text-blue-500 hover:text-blue-700 p-1 md:p-2 rounded transition quick-action-btn touch-target" title="Copy Booking ID">
-                                                <i class="fas fa-copy"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            `;
-                        }).join('')}
-                    </tbody>
-                </table>
-                ${isSearch ? `
-                    <div class="p-3 md:p-4 bg-blue-50 border-t border-blue-200 text-sm text-blue-700 flex justify-between items-center">
-                        <span class="text-xs md:text-sm">Showing ${sortedBookings.length} search result(s)</span>
-                        <button onclick="clearSearch()" class="text-blue-800 hover:text-blue-900 underline text-xs touch-target">
-                            Show All Bookings
-                        </button>
-                    </div>
-                ` : ''}
-            `;
-            container.innerHTML = tableHTML;
-        }
-
-        // Quick action functions
-        window.quickCancelBooking = function(bookingId) {
-            document.getElementById('bookingIdCancel').value = bookingId;
-            switchTab('booking');
-            showMessage(`Booking ID ${bookingId} copied to cancellation field`, 'info');
-        }
-
-        window.copyBookingId = function(bookingId) {
-            navigator.clipboard.writeText(bookingId).then(() => {
-                showMessage(`Booking ID ${bookingId} copied to clipboard!`, 'success');
-            }).catch(() => {
-                const tempInput = document.createElement('input');
-                tempInput.value = bookingId;
-                document.body.appendChild(tempInput);
-                tempInput.select();
-                document.execCommand('copy');
-                document.body.removeChild(tempInput);
-                showMessage(`Booking ID ${bookingId} copied to clipboard!`, 'success');
             });
-        }
 
-        // Search functionality
-        window.handleSearch = function() {
-            const bookingId = document.getElementById('searchBookingId').value.trim().toUpperCase();
-            const phoneNumber = document.getElementById('searchPhone').value.trim();
-            
-            currentSearchTerm = '';
-            currentSearchType = '';
-            
-            if (!bookingId && !phoneNumber) {
-                showMessage('Please enter either Booking ID or Phone Number to search.', 'error');
-                return;
-            }
-            
-            let searchResults = [];
-            let searchType = '';
-            let searchTerm = '';
-            
-            if (bookingId) {
-                searchResults = bookings.filter(booking => 
-                    booking.id.includes(bookingId)
-                );
-                searchType = 'Booking ID';
-                searchTerm = bookingId;
-            } else if (phoneNumber) {
-                searchResults = bookings.filter(booking => 
-                    booking.phone_number && booking.phone_number.includes(phoneNumber)
-                );
-                searchType = 'Phone Number';
-                searchTerm = phoneNumber;
-            }
-            
-            currentSearchTerm = searchTerm;
-            currentSearchType = searchType;
-            
-            const resultsInfo = document.getElementById('search-results-info');
-            if (searchResults.length > 0) {
-                resultsInfo.className = 'mt-4 p-3 rounded-lg bg-green-100 text-green-700 flex items-center';
-                resultsInfo.innerHTML = `
-                    <i class="fas fa-check-circle mr-2"></i>
-                    Found ${searchResults.length} booking(s) matching ${searchType}: "${searchTerm}"
-                    <button onclick="clearSearch()" class="ml-auto text-green-800 hover:text-green-900 touch-target">
-                        <i class="fas fa-times"></i>
-                    </button>
-                `;
-            } else {
-                resultsInfo.className = 'mt-4 p-3 rounded-lg bg-red-100 text-red-700 flex items-center';
-                resultsInfo.innerHTML = `
-                    <i class="fas fa-exclamation-circle mr-2"></i>
-                    No bookings found for ${searchType}: "${searchTerm}"
-                    <button onclick="clearSearch()" class="ml-auto text-red-800 hover:text-red-900 touch-target">
-                        <i class="fas fa-times"></i>
-                    </button>
-                `;
-            }
-            resultsInfo.classList.remove('hidden');
-            
-            renderBookings(searchResults, true);
-        }
-
-        window.clearSearch = function() {
-            document.getElementById('searchBookingId').value = '';
-            document.getElementById('searchPhone').value = '';
-            document.getElementById('search-results-info').classList.add('hidden');
-            currentSearchTerm = '';
-            currentSearchType = '';
-            renderBookings();
-        }
-
-        // Availability range check
-        window.handleAvailabilityRangeCheck = function() {
-            const checkInHtml = document.getElementById('availCheckIn').value;
-            const checkOutHtml = document.getElementById('availCheckOut').value;
-            const checkIn = htmlDateToDMY(checkInHtml);
-            const checkOut = htmlDateToDMY(checkOutHtml);
-            
-            const listContainer = document.getElementById('available-properties-for-range');
-            const rangeStatus = document.getElementById('range-status');
-
-            listContainer.innerHTML = '';
-            
-            if (!checkIn || !checkOut || compareDMYDates(checkIn, checkOut) >= 0) {
-                rangeStatus.innerHTML = '<p class="text-red-500">Please select valid dates.</p>';
-                return;
-            }
-            
-            const availableProps = properties.filter(prop => isPropertyAvailable(prop.id, checkIn, checkOut));
-
-            if (availableProps.length === 0) {
-                rangeStatus.innerHTML = `<p class="text-red-700 font-semibold p-3 bg-red-100 rounded-lg">No properties available.</p>`;
-                return;
-            }
-
-            rangeStatus.innerHTML = `<p class="text-green-700 font-semibold">Found ${availableProps.length} available property(s).</p>`;
-            
-            const listHTML = availableProps.map(prop => `
-                <div class="flex items-center justify-between p-3 bg-white border border-indigo-200 rounded-lg shadow-sm property-card">
-                    <div>
-                        <p class="font-semibold text-indigo-700">${prop.name}</p>
-                        <p class="text-sm text-gray-500">${prop.location}</p>
-                    </div>
-                    <button onclick="bookPropertyFromAvailability('${prop.id}', '${checkIn}', '${checkOut}')" class="px-3 md:px-4 py-2 text-xs md:text-sm bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition touch-target">
-                        <i class="fas fa-hand-point-right mr-1"></i> Book Now
-                    </button>
-                </div>
-            `).join('');
-            
-            listContainer.innerHTML += listHTML;
-        }
-
-        window.bookPropertyFromAvailability = function(propertyId, checkIn, checkOut) {
-            document.getElementById('checkInDate').value = dmyToHtmlDate(checkIn);
-            document.getElementById('checkOutDate').value = dmyToHtmlDate(checkOut);
-            currentSelectedPropertyId = propertyId;
-            switchTab('booking');
-            refreshPropertySelection();
-            showMessage(`Property pre-selected. Fill guest details.`, 'info');
-        }
-
-        function renderProperties() {
-            const container = document.getElementById('property-list-container');
-            const addPropertySection = document.getElementById('add-property-section');
-            
-            if (currentUserRole === 'Admin') {
-                addPropertySection.classList.remove('hidden');
-            } else {
-                addPropertySection.classList.add('hidden');
-            }
-
-            if (properties.length === 0) {
-                container.innerHTML = '<p class="text-gray-500 p-4 border border-dashed rounded-lg text-center">No properties added yet.</p>';
-                return;
-            }
-
-            container.innerHTML = properties.map(p => `
-                <div class="flex items-center justify-between p-3 md:p-4 mb-3 bg-white border border-gray-200 rounded-lg md:rounded-xl shadow-sm property-card">
-                    <div>
-                        <p class="text-base md:text-lg font-semibold text-gray-900">${p.name}</p>
-                        <p class="text-xs md:text-sm text-gray-500"><i class="fas fa-map-marker-alt mr-1"></i> ${p.location}</p>
-                    </div>
-                    ${currentUserRole === 'Admin' ? `
-                        <button onclick="removeProperty('${p.id}')" class="text-red-500 hover:text-red-700 p-1 md:p-2 rounded-full hover:bg-red-50 transition touch-target">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    ` : '<span class="text-xs text-gray-400">View Only</span>'}
-                </div>
-            `).join('');
-            
-            document.getElementById('property-count').textContent = properties.length;
-        }
-
-        // Property deletion function
-        async function removeProperty(propertyId) {
-            if (currentUserRole !== 'Admin') {
-                showMessage('Access Denied: Admin only.', 'error');
-                return;
-            }
-
-            const prop = properties.find(p => p.id === propertyId);
-            const activeBookings = bookings.filter(b => b.property_id === propertyId);
-            
-            if (activeBookings.length > 0) {
-                showMessage(`Cannot remove property. ${activeBookings.length} active booking(s) exist. Cancel the bookings first.`, 'error');
-                return;
-            }
-            
-            showConfirmationModal(
-                'Confirm Property Deletion', 
-                `Are you sure you want to permanently delete "${prop.name}"? This action cannot be undone.`,
-                async () => {
-                    try {
-                        showMessage('Deleting property...', 'info');
-                        
-                        const { error } = await supabase
-                            .from('properties')
-                            .delete()
-                            .eq('id', propertyId);
-                        
-                        if (error) {
-                            throw new Error(`Database error: ${error.message}`);
+            const sourceCtx = document.getElementById('sourceChart').getContext('2d');
+            sourceChart = new Chart(sourceCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: sourceLabels,
+                    datasets: [{
+                        label: 'Enquiry Count',
+                        data: sourceData,
+                        backgroundColor: [
+                            '#8C1007', '#660B05', '#3E0703', '#FFF0C4'
+                        ],
+                        borderWidth: 0,
+                        hoverOffset: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                usePointStyle: true
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed !== null) {
+                                        label += context.parsed;
+                                    }
+                                    return label;
+                                }
+                            }
                         }
-                        
-                        properties = properties.filter(p => p.id !== propertyId);
-                        localStorage.setItem(STORAGE_KEY_PROPERTIES, JSON.stringify(properties));
-                        
-                        renderProperties();
-                        refreshPropertySelection();
-                        renderAvailabilityCalendar();
-                        
-                        document.getElementById('property-count').textContent = properties.length;
-                        
-                        showMessage(`Property "${prop.name}" has been permanently deleted.`, 'success');
-                        
-                    } catch (error) {
-                        console.error('Failed to delete property:', error);
-                        showMessage(`Failed to delete property: ${error.message}`, 'error');
-                        
-                        await loadData();
-                        renderProperties();
-                        renderAvailabilityCalendar();
                     }
                 }
-            );
-        }
-
-        function updateAdminUI() {
-            const loginContainer = document.getElementById('login-container');
-            const dashboard = document.getElementById('admin-dashboard');
-            const welcomeMessage = document.getElementById('role-welcome-message');
-            
-            renderProperties();
-            renderUserList();
-
-            if (currentUserRole) {
-                loginContainer.classList.add('hidden');
-                dashboard.classList.remove('hidden');
-                const currentUser = JSON.parse(localStorage.getItem(STORAGE_KEY_USER));
-                const bgColor = currentUser.role === 'Admin' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700';
-                welcomeMessage.className = `text-base md:text-lg font-medium p-3 rounded-lg flex items-center ${bgColor}`;
-                welcomeMessage.innerHTML = `<i class="fas fa-check-circle mr-2"></i> Welcome, ${currentUser.role} ${currentUser.username}!`;
-            } else {
-                loginContainer.classList.remove('hidden');
-                dashboard.classList.add('hidden');
-                document.getElementById('adminUsername').value = '';
-                document.getElementById('adminPassword').value = '';
-            }
-        }
-
-        function logoutAdmin() {
-            currentUserRole = null;
-            localStorage.removeItem(STORAGE_KEY_USER);
-            updateAdminUI();
-            showMessage('Logged out successfully.', 'info');
+            });
         }
     </script>
 </body>
